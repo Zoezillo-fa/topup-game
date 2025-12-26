@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+
+:root {
+    /* Palette Warna Premium */
+    --bg-main: #0f1119; /* Hitam lebih pekat */
+    --bg-secondary: #1a1c26;
+    --bg-card: #242733;
+    --text-primary: #ffffff;
+    --text-secondary: #a0aaec;
+    
+    /* Gradasi Emas Premium */
+    --gold-gradient: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+    --gold-color: #ffc107;
+
+    /* Glassmorphism Effect */
+    --glass-bg: rgba(36, 39, 51, 0.7);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    --blur-effect: blur(12px);
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* --- NAVBAR GLASS --- */
+.navbar-glass {
+    background: var(--glass-bg) !important;
+    backdrop-filter: var(--blur-effect);
+    -webkit-backdrop-filter: var(--blur-effect);
+    border-bottom: var(--glass-border);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 1.5rem;
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- CARD GAME PREMIUM --- */
+.card-game-premium {
+    background: var(--bg-card);
+    border: var(--glass-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    position: relative;
+}
+
+/* Efek Glow saat Hover */
+.card-game-premium::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 16px;
+    padding: 2px; /* Ketebalan border gradient */
+    background: var(--gold-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.card-game-premium:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+
+.card-game-premium:hover::before {
+    opacity: 1;
+}
+
+.card-game-premium img.banner-img {
+    height: 180px;
+    object-fit: cover;
+    width: 100%;
+    border-bottom: var(--glass-border);
+    filter: brightness(0.9);
+    transition: 0.4s;
+}
+
+.card-game-premium:hover img.banner-img {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+}
+
+.logo-floating {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    border: 2px solid var(--gold-color);
+    position: absolute;
+    top: 155px; /* Posisi menimpa banner dan body */
+    left: 20px;
+    background: var(--bg-card);
+    padding: 2px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 2;
+}
+
+.card-game-premium .card-body {
+    padding: 20px;
+    padding-top: 35px; /* Memberi ruang untuk logo floating */
+}
+
+.game-title-premium {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.game-publisher-premium {
+    color: var(--gold-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* --- UTILITIES & LAINNYA --- */
+.search-container-premium {
+    background: var(--bg-secondary);
+    border: var(--glass-border);
+    border-radius: 50px;
+    padding: 8px 25px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.search-input-premium {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    width: 100%;
+    font-weight: 500;
+}
+.search-input-premium:focus { outline: none; }
+.search-input-premium::placeholder { color: var(--text-secondary); opacity: 0.7; }
+
+.section-title-premium {
+    font-weight: 800;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 25px;
+}
+.section-title-premium::after {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 4px;
+    background: var(--gold-gradient);
+    bottom: -10px;
+    left: 0;
+    border-radius: 2px;
+}
+
+footer {
+    background: #0a0c10;
+    border-top: 1px solid #1a1c26;
+    color: var(--text-secondary);
+}
+
+.btn-gold-gradient {
+    background: var(--gold-gradient);
+    border: none;
+    color: #000;
+    font-weight: 700;
+    transition: 0.3s;
+}
+.btn-gold-gradient:hover {
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    transform: scale(1.05);
+}
