@@ -1,4 +1,7 @@
 @extends('layouts.admin')
+
+@section('title', 'Kelola Produk')
+
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0">Daftar Produk</h4>
@@ -7,7 +10,9 @@
     </a>
 </div>
 
-@if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
+@if(session('success')) 
+    <div class="alert alert-success">{{ session('success') }}</div> 
+@endif
 
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
@@ -38,7 +43,7 @@
                             <span class="badge bg-success">+Rp {{ number_format($profit) }}</span>
                         </td>
                         <td>
-                            <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Hapus?')">
+                            <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" onsubmit="return confirm('Hapus produk ini?')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
@@ -51,6 +56,11 @@
             </table>
         </div>
     </div>
-    <div class="card-footer bg-white">{{ $products->links() }}</div>
+    
+    <div class="card-footer bg-white py-3">
+        <div class="d-flex justify-content-end">
+            {{ $products->links('pagination::bootstrap-5') }}
+        </div>
+    </div>
 </div>
 @endsection

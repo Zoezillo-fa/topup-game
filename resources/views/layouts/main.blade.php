@@ -22,12 +22,28 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center fw-semibold text-uppercase small">
-                    <li class="nav-item"><a class="nav-link px-3 active" href="/">Beranda</a></li>
-                    <li class="nav-item"><a class="nav-link px-3" href="#">Cek Pesanan</a></li>
+                    {{-- Link Beranda mengarah ke route 'home' --}}
+                    <li class="nav-item">
+                        <a class="nav-link px-3 {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Beranda</a>
+                    </li>
+                    
+                    {{-- Link Cek Pesanan (Bisa disiapkan routenya nanti) --}}
+                    <li class="nav-item">
+                        <a class="nav-link px-3 {{ request()->routeIs('order.*') ? 'active' : '' }}" href="{{ route('order.check') }}">Cek Pesanan</a>
+                    </li>
+                    
                     <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
-                        <a href="#" class="btn btn-gold-gradient rounded-pill px-4 py-2">
-                            <i class="bi bi-person-fill me-1"></i> Masuk
-                        </a>
+                        @auth
+                            {{-- LOGIKA: Jika user SUDAH login, tampilkan tombol ke Dashboard --}}
+                            <a href="{{ route('admin.dashboard') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2">
+                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                            </a>
+                        @else
+                            {{-- LOGIKA: Jika user BELUM login (Tamu), tampilkan tombol Masuk --}}
+                            <a href="{{ route('admin.login') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2">
+                                <i class="bi bi-person-fill me-1"></i> Masuk
+                            </a>
+                        @endauth
                     </li>
                 </ul>
             </div>

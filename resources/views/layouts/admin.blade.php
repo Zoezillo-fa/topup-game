@@ -74,6 +74,13 @@
                 </a>
             </li>
 
+            <div class="section-header">Monitoring</div>
+            <li class="nav-item">
+                <a href="{{ route('admin.transactions.index') }}" class="nav-link {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+                    <i class="bi bi-receipt"></i> Transaksi
+                </a>
+            </li>
+
             <div class="section-header">Integrasi API</div>
             <li class="nav-item">
                 <a class="nav-link collapsed" data-bs-toggle="collapse" href="#menuIntegration">
@@ -115,7 +122,7 @@
                             </a>
                         </li>
                         <li class="nav-item mb-2">
-                            <a href="{{ route('admin.promos.index') }}" class="nav-link text-white {{ request()->is('admin/promos*') ? 'active bg-primary' : '' }}">
+                            <a href="{{ route('admin.promos.index') }}" class="nav-link {{ request()->is('admin/promos*') ? 'active' : '' }}">
                                 <i class="bi bi-ticket-perforated-fill me-2"></i>
                                 Kode Promo / Voucher
                             </a>
