@@ -16,10 +16,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        // [PERBAIKAN]
         // Urutkan berdasarkan Game (A-Z) lalu berdasarkan Harga (Termurah -> Termahal)
         $products = Product::orderBy('game_code', 'asc')
-                            ->orderBy('price', 'asc') // <--- Tambahan ini agar harga urut
+                            ->orderBy('price', 'asc')
                             ->paginate(20);
 
         return view('admin.products.index', compact('products'));
@@ -35,16 +34,22 @@ class ProductController extends Controller
     }
 
     /**
-     * 3. PROSES SYNC DARI DIGIFLAZZ (LOGIC UTAMA)
+     * 3. PROSES SYNC DARI DIGIFLAZZ (LOGIC UTAMA + HARGA VIP)
      */
     public function syncProcess(Request $request)
     {
-        // A. Validasi Input
+        // A. Validasi Input (Tambahkan validasi untuk VIP)
         $request->validate([
             'game_code' => 'required',
-            'provider_brand' => 'required', // Contoh: "Mobile Legends"
+            'provider_brand' => 'required',
+            
+            // Margin Member Biasa
             'profit_type' => 'required|in:percent,flat',
             'profit_value' => 'required|numeric',
+
+            // Margin Member VIP [BARU]
+            'vip_profit_type' => 'required|in:percent,flat',
+            'vip_profit_value' => 'required|numeric',
         ]);
 
         // B. Ambil Config & Request ke Digiflazz
@@ -53,99 +58,214 @@ class ProductController extends Controller
         $sign = md5($username . $key . "pricelist");
 
         try {
-            // Timeout diperpanjang jadi 30 detik karena data Price List besar
-            // Ini penting untuk localhost dengan koneksi tidak stabil
             $response = Http::timeout(30)->post('https://api.digiflazz.com/v1/price-list', [
-                'cmd' => 'prepaid',
-                'username' => $username,
-                'sign' => $sign
+                'cmd' => 'prepaid', 'username' => $username, 'sign' => $sign
             ]);
             $result = $response->json();
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal koneksi ke server Digiflazz (Timeout). Cek koneksi internet Anda.');
+            return back()->with('error', 'Gagal koneksi ke Digiflazz (Timeout).');
         }
 
-        // C. Validasi Respon API
-        
-        // 1. Cek Key Data
-        if (!isset($result['data'])) {
-            return back()->with('error', 'Gagal mengambil data. Respon API kosong.');
+        if (!isset($result['data']) || !is_array($result['data'])) {
+            return back()->with('error', 'Gagal mengambil data dari provider.');
         }
 
-        // 2. Cek Error String (Misal: IP Not Allowed, Username salah)
-        if (is_string($result['data'])) {
-            return back()->with('error', 'Digiflazz Error: ' . $result['data']);
-        }
-
-        // 3. Cek Array Kosong (Rate Limit / Gangguan Sesaat)
-        if (is_array($result['data']) && count($result['data']) === 0) {
-            return back()->with('error', 'Digiflazz mengembalikan data kosong (0 produk). Server mereka mungkin sedang sibuk atau Anda menekan tombol terlalu cepat. Mohon tunggu 1 menit lalu coba lagi.');
-        }
-
-        // D. LOGIKA PENCARIAN PINTAR (SMART SEARCH)
-        
+        // C. Filter Data Sesuai Brand
         $targetBrand = strtolower(trim($request->provider_brand));
         $allData = collect($result['data']);
 
-        // Tahap 1: Cari yang PERSIS sama (Exact Match)
         $items = $allData->filter(function ($item) use ($targetBrand) {
-            return isset($item['brand']) && strtolower(trim($item['brand'])) === $targetBrand;
+            return isset($item['brand']) && str_contains(strtolower($item['brand']), $targetBrand);
         });
 
-        // Tahap 2: Jika tidak ketemu, cari yang MIRIP (Contains / Mengandung Kata)
         if ($items->isEmpty()) {
-            $items = $allData->filter(function ($item) use ($targetBrand) {
-                return isset($item['brand']) && str_contains(strtolower($item['brand']), $targetBrand);
-            });
+            return back()->with('error', "Brand '$targetBrand' tidak ditemukan.");
         }
 
-        // E. JIKA MASIH TIDAK KETEMU -> TAMPILKAN SARAN
-        if ($items->isEmpty()) {
-            // Ambil 20 Brand pertama untuk contoh
-            $availableBrands = $allData->pluck('brand')->unique()->take(20)->implode(', ');
-            
-            // Menggunakan format HTML di pesan error
-            return back()->with('error', "Gagal menemukan brand '<b>{$request->provider_brand}</b>'. <br><br> Brand yang tersedia saat ini antara lain: <br> <i>{$availableBrands}</i>... (dan lainnya).");
-        }
-
-        // F. PROSES SIMPAN (Looping)
+        // D. PROSES PERHITUNGAN & SIMPAN
         $count = 0;
         foreach ($items as $item) {
             $modal = $item['price'];
-            
-            // Skip jika harga 0 (Biasanya produk gangguan/kosong)
-            if ($modal <= 0) continue;
+            if ($modal <= 0) continue; // Skip produk gangguan
 
-            // Hitung Margin
+            // --- 1. HITUNG HARGA MEMBER BIASA ---
             if ($request->profit_type == 'percent') {
-                $jual = $modal + ($modal * $request->profit_value / 100);
+                $margin = $modal * ($request->profit_value / 100);
             } else {
-                $jual = $modal + $request->profit_value;
+                $margin = $request->profit_value;
             }
-            $jual = ceil($jual); // Pembulatan ke atas
+            $jual = ceil($modal + $margin);
 
-            // Simpan ke Database
+            // --- 2. HITUNG HARGA MEMBER VIP [LOGIKA BARU] ---
+            // Menggunakan input dari form, bukan otomatis 70% lagi
+            if ($request->vip_profit_type == 'percent') {
+                $marginVip = $modal * ($request->vip_profit_value / 100);
+            } else {
+                $marginVip = $request->vip_profit_value;
+            }
+            $jualVip = ceil($modal + $marginVip);
+
+            // Pastikan Harga VIP tidak lebih mahal dari Member Biasa (Opsional, safety logic)
+            if ($jualVip > $jual) $jualVip = $jual;
+
+
+            // --- 3. SIMPAN KE DATABASE ---
             Product::updateOrCreate(
-                [
-                    // PENTING: Gunakan 'code' sebagai kunci pencarian agar tidak Error Duplicate Entry
-                    'code' => $item['buyer_sku_code'], 
-                ],
+                ['code' => $item['buyer_sku_code']], 
                 [
                     'sku_provider' => $item['buyer_sku_code'],
                     'name' => $item['product_name'],
                     'game_code' => $request->game_code,
                     'cost_price' => $modal,
-                    'price' => $jual,
-                    'is_active' => $item['buyer_product_status'] && $item['seller_product_status'],
                     
-                    // PENTING: Isi category agar tidak Error Field Default Value
+                    'price' => $jual,          // Harga Member Biasa
+                    'price_vip' => $jualVip,   // Harga VIP
+                    
+                    'is_active' => $item['buyer_product_status'] && $item['seller_product_status'],
                     'category' => $item['category'] ?? 'Games'
                 ]
             );
             $count++;
         }
 
-        return redirect()->route('admin.products.index')->with('success', "Sukses! $count produk berhasil disinkronkan dari brand: " . $items->first()['brand']);
+        return redirect()->route('admin.products.index')->with('success', "Sukses! $count produk diupdate. Harga Member & VIP berhasil diatur.");
+    }
+
+    /**
+     * [BARU] SYNC SEMUA GAME SEKALIGUS
+     */
+    public function syncAllProcess(Request $request)
+    {
+        // 1. Validasi Input Margin Saja (Tidak butuh game_code/brand spesifik)
+        $request->validate([
+            'profit_type' => 'required|in:percent,flat',
+            'profit_value' => 'required|numeric',
+            'vip_profit_type' => 'required|in:percent,flat',
+            'vip_profit_value' => 'required|numeric',
+        ]);
+
+        // 2. Set Time Limit Unlimited (Karena prosesnya lama)
+        set_time_limit(300); // 5 Menit
+
+        // 3. Ambil Data Digiflazz
+        $username = Configuration::getBy('digiflazz_username');
+        $key = Configuration::getBy('digiflazz_key');
+        $sign = md5($username . $key . "pricelist");
+
+        try {
+            $response = Http::timeout(60)->post('https://api.digiflazz.com/v1/price-list', [
+                'cmd' => 'prepaid', 'username' => $username, 'sign' => $sign
+            ]);
+            $result = $response->json();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal koneksi ke Digiflazz.');
+        }
+
+        if (!isset($result['data'])) return back()->with('error', 'Data API Kosong.');
+
+        // 4. Ambil Semua Game Lokal Kita
+        $localGames = Game::all(); 
+        $allDataDigi = collect($result['data']);
+        $totalUpdated = 0;
+
+        // 5. Looping Setiap Game Lokal
+        foreach ($localGames as $game) {
+            
+            // LOGIKA BARU:
+            // Cek apakah admin sudah setting brand khusus untuk Digiflazz?
+            if (!empty($game->brand_digiflazz)) {
+                // Jika ada, pakai settingan manual (LEBIH AKURAT)
+                $targetBrand = strtolower($game->brand_digiflazz);
+            } else {
+                // Jika kosong, pakai nama game biasa (AUTO)
+                $targetBrand = strtolower($game->name);
+            }
+
+            // Filter data Digiflazz yang cocok
+            $items = $allDataDigi->filter(function ($item) use ($targetBrand) {
+                return isset($item['brand']) && str_contains(strtolower($item['brand']), $targetBrand);
+            });
+
+            // Jika ada produk yang cocok, proses simpan
+            foreach ($items as $item) {
+                $modal = $item['price'];
+                if ($modal <= 0) continue;
+
+                // Hitung Margin Member
+                if ($request->profit_type == 'percent') {
+                    $margin = $modal * ($request->profit_value / 100);
+                } else {
+                    $margin = $request->profit_value;
+                }
+                $jual = ceil($modal + $margin);
+
+                // Hitung Margin VIP
+                if ($request->vip_profit_type == 'percent') {
+                    $marginVip = $modal * ($request->vip_profit_value / 100);
+                } else {
+                    $marginVip = $request->vip_profit_value;
+                }
+                $jualVip = ceil($modal + $marginVip);
+                if ($jualVip > $jual) $jualVip = $jual;
+
+                // Simpan
+                Product::updateOrCreate(
+                    ['code' => $item['buyer_sku_code']], 
+                    [
+                        'sku_provider' => $item['buyer_sku_code'],
+                        'name' => $item['product_name'],
+                        'game_code' => $game->code, // Pakai kode game yang sedang di-loop
+                        'cost_price' => $modal,
+                        'price' => $jual,
+                        'price_vip' => $jualVip,
+                        'is_active' => $item['buyer_product_status'] && $item['seller_product_status'],
+                        'category' => $item['category'] ?? 'Games'
+                    ]
+                );
+                $totalUpdated++;
+            }
+        }
+
+        return redirect()->route('admin.products.index')->with('success', "Proses Selesai! Total $totalUpdated produk berhasil disinkronkan ke berbagai game.");
+    }
+
+    /**
+     * [BARU] AJAX: Ambil Daftar Brand Unik dari Digiflazz
+     */
+    public function getDigiflazzBrands()
+    {
+        $username = Configuration::getBy('digiflazz_username');
+        $key = Configuration::getBy('digiflazz_key');
+        $sign = md5($username . $key . "pricelist");
+
+        try {
+            // Cache selama 60 menit agar tidak membebani server/API
+            $brands = \Illuminate\Support\Facades\Cache::remember('digi_brands_list', 3600, function () use ($username, $sign) {
+                
+                $response = Http::timeout(30)->post('https://api.digiflazz.com/v1/price-list', [
+                    'cmd' => 'prepaid', 'username' => $username, 'sign' => $sign
+                ]);
+                $result = $response->json();
+
+                if (!isset($result['data'])) return [];
+
+                // Ambil kolom 'brand', hilangkan duplikat, dan urutkan A-Z
+                return collect($result['data'])
+                        ->pluck('brand')
+                        ->unique()
+                        ->sort()
+                        ->values()
+                        ->all();
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $brands
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
+        }
     }
 
     /**

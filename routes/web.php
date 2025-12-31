@@ -99,12 +99,19 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     Route::resource('users', UserController::class, ['as' => 'admin']);
     Route::resource('transactions', TransactionController::class, ['as' => 'admin'])->only(['index', 'update']);
     Route::resource('games', GameController::class, ['as' => 'admin'])->except(['create', 'edit', 'show']);
-    
+    // [BARU] Route Sync Game dari Digiflazz
+    Route::post('/games/sync-digiflazz', [GameController::class, 'syncDigiflazz'])->name('admin.games.sync');
+
     // Produk
     Route::get('/products', [ProductController::class, 'index'])->name('admin.products.index');
     Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
     Route::get('/products/sync', [ProductController::class, 'syncView'])->name('admin.products.sync');
     Route::post('/products/sync', [ProductController::class, 'syncProcess'])->name('admin.products.sync.process');
+    
+    // [BARU] Route Sync Otomatis (Fix Route Name)
+    Route::post('/products/sync-all', [ProductController::class, 'syncAllProcess'])->name('admin.products.sync.all');
+    // [BARU] Route Ajax Cek Brand
+    Route::get('/products/check-brands', [ProductController::class, 'getDigiflazzBrands'])->name('admin.products.brands');
 
     // Integrasi
     Route::get('/integration/digiflazz', [IntegrationController::class, 'digiflazz'])->name('admin.integration.digiflazz');

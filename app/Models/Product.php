@@ -14,6 +14,7 @@ class Product extends Model
     'code', 
     'game_code', 
     'price', 
+    'price_vip',
     'sku_provider', 
     'cost_price', 
     'is_active',

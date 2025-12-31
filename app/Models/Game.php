@@ -12,6 +12,7 @@ class Game extends Model
     protected $fillable = [
         'name',
         'code',
+        'brand_digiflazz',
         'slug',
         'publisher',
         'target_endpoint',
