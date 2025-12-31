@@ -4,24 +4,29 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class GameSeeder extends Seeder
 {
     public function run()
     {
+        // 1. Matikan cek foreign key agar bisa truncate (kosongkan) tabel
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('games')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        $now = Carbon::now();
 
         $games = [
             [
                 'name' => 'Mobile Legends',
                 'code' => 'mobile-legends',
                 'publisher' => 'Moonton',
-                'target_endpoint' => 'ml',
-                // Perhatikan path-nya sekarang mengarah ke folder public/images
+                'target_endpoint' => 'ml', // Kode untuk API Cek ID
                 'thumbnail' => '/images/logo/mlbb.png',
                 'banner' => '/images/banner/mlbb.jpg',
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'name' => 'Free Fire',
@@ -30,24 +35,20 @@ class GameSeeder extends Seeder
                 'target_endpoint' => 'ff',
                 'thumbnail' => '/images/logo/ff.png',
                 'banner' => '/images/banner/ff.jpg',
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
-            [
-                'name' => 'PUBG Mobile',
-                'code' => 'pubg-mobile',
-                'publisher' => 'Tencent',
-                'target_endpoint' => 'pubgm',
-                'thumbnail' => '/images/logo/pubgm.png',
-                'banner' => '/images/banner/pubgm.jpg',
-            ],
-            [
-                'name' => 'Genshin Impact',
-                'code' => 'genshin-impact',
-                'publisher' => 'Hoyoverse',
-                'target_endpoint' => 'gi',
-                'thumbnail' => '/images/logo/genshin.png',
-                'banner' => '/images/banner/genshin.jpg',
-            ],
-            // Tambahkan game lain jika sudah download gambarnya
+            // Game lain bisa ditambahkan nanti (pastikan file gambarnya ada dulu)
+            // [
+            //     'name' => 'PUBG Mobile',
+            //     'code' => 'pubg-mobile',
+            //     'publisher' => 'Tencent',
+            //     'target_endpoint' => 'pubgm',
+            //     'thumbnail' => '/images/logo/pubgm.png',
+            //     'banner' => '/images/banner/pubgm.jpg',
+            //     'created_at' => $now,
+            //     'updated_at' => $now,
+            // ],
         ];
 
         DB::table('games')->insert($games);

@@ -27,20 +27,31 @@
                         <a class="nav-link px-3 {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Beranda</a>
                     </li>
                     
-                    {{-- Link Cek Pesanan (Bisa disiapkan routenya nanti) --}}
+                    {{-- Link Cek Pesanan --}}
                     <li class="nav-item">
                         <a class="nav-link px-3 {{ request()->routeIs('order.*') ? 'active' : '' }}" href="{{ route('order.check') }}">Cek Pesanan</a>
                     </li>
                     
                     <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
                         @auth
-                            {{-- LOGIKA: Jika user SUDAH login, tampilkan tombol ke Dashboard --}}
-                            <a href="{{ route('admin.dashboard') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2">
-                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
-                            </a>
+                            {{-- LOGIKA: Jika user SUDAH login, tampilkan Dashboard sesuai Role --}}
+                            @if(Auth::user()->role == 'admin')
+                                <a href="{{ route('admin.dashboard') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2">
+                                    <i class="bi bi-speedometer2 me-1"></i> Admin Panel
+                                </a>
+                            @else
+                                {{-- Jika Member, bisa diarahkan ke home atau dashboard member (jika ada) --}}
+                                <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-warning rounded-pill px-4 py-2">
+                                        <i class="bi bi-box-arrow-right me-1"></i> Logout
+                                    </button>
+                                </form>
+                            @endif
                         @else
-                            {{-- LOGIKA: Jika user BELUM login (Tamu), tampilkan tombol Masuk --}}
-                            <a href="{{ route('admin.login') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2">
+                            {{-- LOGIKA: Jika user BELUM login (Tamu) --}}
+                            {{-- [PERBAIKAN] Mengarah ke route('login') bukan admin.login --}}
+                            <a href="{{ route('login') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2">
                                 <i class="bi bi-person-fill me-1"></i> Masuk
                             </a>
                         @endauth

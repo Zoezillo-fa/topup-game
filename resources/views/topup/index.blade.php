@@ -86,7 +86,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('topup.process') }}" method="POST">
+            <form id="form-topup" action="{{ route('topup.process') }}" method="POST">
                 @csrf
                 <input type="hidden" name="game_code" id="game_code" value="{{ $game->target_endpoint }}"> <input type="hidden" name="nickname_game" id="nickname_game">
 
@@ -132,7 +132,11 @@
                         <div class="row row-cols-2 row-cols-md-3 g-3">
                             @foreach($products as $product)
                             <div class="col">
-                                <input type="radio" class="btn-check" name="product_code" id="prod{{ $product->id }}" value="{{ $product->code }}" required>
+                                {{-- [EDIT] Tambahkan data-price dan data-name --}}
+                                <input type="radio" class="btn-check" name="product_code" id="prod{{ $product->id }}" value="{{ $product->code }}" 
+                                    data-price="{{ $product->price }}" 
+                                    data-name="{{ $product->name }}" 
+                                    required>
                                 <label class="btn btn-outline-light w-100 h-100 d-flex flex-column justify-content-center py-3 product-card position-relative" for="prod{{ $product->id }}">
                                     <span class="fw-bold d-block mb-1 text-white">{{ $product->name }}</span>
                                     <span class="text-gold fw-bolder">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
@@ -187,7 +191,12 @@
                                         <div class="row g-2">
                                             @foreach($paymentChannels['e_wallet'] as $pay)
                                                 <div class="col-6 col-md-4">
-                                                    <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" required>
+                                                    {{-- [EDIT] Tambah data fee --}}
+                                                    <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" 
+                                                        data-name="{{ $pay->name }}"
+                                                        data-fee-flat="{{ $pay->admin_fee_flat }}"
+                                                        data-fee-percent="{{ $pay->admin_fee_percent }}"
+                                                        required>
                                                     <label class="btn btn-outline-light w-100 h-100 d-flex flex-column align-items-center justify-content-center py-2 payment-card position-relative" for="pay_{{ $pay->code }}">
                                                         <img src="{{ $pay->image }}" height="25" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
                                                         <span class="small fw-bold text-white-50 text-center">{{ $pay->name }}</span>
@@ -215,7 +224,12 @@
                                         <div class="row g-2">
                                             @foreach($paymentChannels['virtual_account'] as $pay)
                                                 <div class="col-6 col-md-4">
-                                                    <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" required>
+                                                    {{-- [EDIT] Tambah data fee --}}
+                                                    <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" 
+                                                        data-name="{{ $pay->name }}"
+                                                        data-fee-flat="{{ $pay->admin_fee_flat }}"
+                                                        data-fee-percent="{{ $pay->admin_fee_percent }}"
+                                                        required>
                                                     <label class="btn btn-outline-light w-100 h-100 d-flex flex-column align-items-center justify-content-center py-2 payment-card position-relative" for="pay_{{ $pay->code }}">
                                                         <img src="{{ $pay->image }}" height="20" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
                                                         <span class="small fw-bold text-white-50 text-center">{{ $pay->name }}</span>
@@ -243,7 +257,12 @@
                                          <div class="row g-2">
                                              @foreach($paymentChannels['retail'] as $pay)
                                                  <div class="col-6 col-md-4">
-                                                     <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" required>
+                                                     {{-- [EDIT] Tambah data fee --}}
+                                                     <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" 
+                                                        data-name="{{ $pay->name }}"
+                                                        data-fee-flat="{{ $pay->admin_fee_flat }}"
+                                                        data-fee-percent="{{ $pay->admin_fee_percent }}"
+                                                        required>
                                                      <label class="btn btn-outline-light w-100 h-100 d-flex flex-column align-items-center justify-content-center py-2 payment-card position-relative" for="pay_{{ $pay->code }}">
                                                          <img src="{{ $pay->image }}" height="25" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
                                                          <span class="small fw-bold text-white-50 text-center">{{ $pay->name }}</span>
@@ -263,7 +282,8 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-gold-gradient w-100 py-3 fw-bold fs-5 rounded-pill shadow-lg hover-scale text-dark mb-5 border-0">
+                {{-- [EDIT] Ubah type menjadi button dan tambahkan onclick --}}
+                <button type="button" onclick="showConfirmModal()" class="btn btn-gold-gradient w-100 py-3 fw-bold fs-5 rounded-pill shadow-lg hover-scale text-dark mb-5 border-0">
                     <i class="bi bi-cart-check-fill me-2"></i> KONFIRMASI TOP UP
                 </button>
 
@@ -301,11 +321,142 @@
         </div>
     </div>
 </div>
+
+{{-- [BARU] Modal Konfirmasi --}}
+<div class="modal fade" id="modalConfirm" tabindex="-1" aria-labelledby="modalConfirmLabel" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background-color: #1e212b; border: 1px solid rgba(255,255,255,0.1); color: white;">
+      
+      <div class="modal-header border-secondary border-opacity-25">
+        <h5 class="modal-title fw-bold" id="modalConfirmLabel">
+            <i class="bi bi-receipt text-warning me-2"></i>Detail Pesanan
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="rounded p-3 mb-3" style="background-color: #111319;">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-white-50 small">User ID / Zone</span>
+                <span class="fw-bold" id="conf-uid">-</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-white-50 small">Nickname</span>
+                <span class="fw-bold text-warning" id="conf-nick">-</span>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-white-50">Item</span>
+            <span class="fw-bold text-end" id="conf-item">-</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-white-50">Metode Bayar</span>
+            <span class="fw-bold text-end" id="conf-method">-</span>
+        </div>
+        <hr class="border-secondary border-opacity-25 my-3">
+        
+        <div class="d-flex justify-content-between mb-2">
+            <span>Harga Produk</span>
+            <span class="fw-bold" id="conf-price">Rp 0</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+            <span>Biaya Admin</span>
+            <span class="fw-bold text-danger" id="conf-fee">Rp 0</span>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-3 pt-2 border-top border-secondary border-opacity-25">
+            <span class="fs-5 fw-bold">Total Bayar</span>
+            <span class="fs-4 fw-bolder text-warning" id="conf-total">Rp 0</span>
+        </div>
+      </div>
+
+      <div class="modal-footer border-secondary border-opacity-25">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" onclick="submitForm()" class="btn btn-gold-gradient fw-bold text-dark shadow-warning">
+            <i class="bi bi-wallet2 me-2"></i>Lanjut Bayar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    // [BARU] Fungsi Format Rupiah
+    const formatRupiah = (number) => {
+        return new Intl.NumberFormat('id-ID', { 
+            style: 'currency', 
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(number);
+    }
+
+    // [BARU] Fungsi Tampilkan Modal
+    function showConfirmModal() {
+        // 1. Ambil Value Input
+        let userId = $('#userid').val();
+        let zoneId = $('#zoneid').val() || '';
+        let nickname = $('#nickname_game').val() || '-';
+        
+        // 2. Ambil Radio Button yang Dipilih
+        let product = $('input[name="product_code"]:checked');
+        let payment = $('input[name="payment_method"]:checked');
+
+        // 3. Validasi Sederhana
+        if (!userId) {
+            alert("Mohon isi User ID terlebih dahulu!");
+            $('#userid').focus();
+            return;
+        }
+        if (product.length === 0) {
+            alert("Mohon pilih item yang ingin dibeli!");
+            return;
+        }
+        if (payment.length === 0) {
+            alert("Mohon pilih metode pembayaran!");
+            return;
+        }
+
+        // 4. Ambil Data dari Atribut HTML
+        let price = parseFloat(product.data('price'));
+        let productName = product.data('name');
+
+        let methodName = payment.data('name');
+        let feeFlat = parseFloat(payment.data('fee-flat'));
+        let feePercent = parseFloat(payment.data('fee-percent'));
+
+        // 5. Rumus Kalkulasi Fee (Flat + Persen)
+        let adminFee = feeFlat + (price * feePercent / 100);
+        adminFee = Math.ceil(adminFee); // Pembulatan ke atas
+
+        let totalBayar = price + adminFee;
+
+        // 6. Isi Data ke Modal
+        let fullId = zoneId ? userId + ' (' + zoneId + ')' : userId;
+        
+        $('#conf-uid').text(fullId);
+        $('#conf-nick').text(nickname);
+        $('#conf-item').text(productName);
+        $('#conf-method').text(methodName);
+        
+        $('#conf-price').text(formatRupiah(price));
+        $('#conf-fee').text('+ ' + formatRupiah(adminFee));
+        $('#conf-total').text(formatRupiah(totalBayar));
+
+        // 7. Tampilkan Modal
+        var myModal = new bootstrap.Modal(document.getElementById('modalConfirm'));
+        myModal.show();
+    }
+
+    // [BARU] Fungsi Submit Form
+    function submitForm() {
+        $('#form-topup').submit();
+    }
+
     function cekNamaGame() {
         var userId = $('#userid').val();
         var zoneId = $('#zoneid').val();
@@ -320,7 +471,7 @@
         $('#nick-result').html('<span class="spinner-border spinner-border-sm me-2"></span> Checking...');
 
         $.ajax({
-            url: '/api/check-game-id', // Pastikan route ini ada
+            url: '/api/check-game-id', 
             type: 'POST',
             data: { 
                 user_id: userId, 
