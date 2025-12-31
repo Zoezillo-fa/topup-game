@@ -12,12 +12,16 @@ use Illuminate\Support\Facades\Http;
 class ProductController extends Controller
 {
     /**
-     * 1. MENAMPILKAN DAFTAR PRODUK
+     * 1. MENAMPILKAN DAFTAR PRODUK (DENGAN SORTING HARGA)
      */
     public function index()
     {
-        // Load produk, urutkan berdasarkan Game
-        $products = Product::orderBy('game_code')->paginate(20);
+        // [PERBAIKAN]
+        // Urutkan berdasarkan Game (A-Z) lalu berdasarkan Harga (Termurah -> Termahal)
+        $products = Product::orderBy('game_code', 'asc')
+                            ->orderBy('price', 'asc') // <--- Tambahan ini agar harga urut
+                            ->paginate(20);
+
         return view('admin.products.index', compact('products'));
     }
 

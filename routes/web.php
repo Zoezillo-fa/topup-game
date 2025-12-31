@@ -9,6 +9,9 @@ use App\Models\Game;
 use App\Http\Controllers\TopupController;
 use App\Http\Controllers\OrderController; 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\PricelistController;
+use App\Http\Controllers\PageController;
 
 // Import Admin Controllers
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
@@ -35,6 +38,22 @@ Route::get('/', function () {
     $games = Game::all();
     return view('home', compact('games'));
 })->name('home');
+
+// [BARU] Route Halaman Pricelist
+Route::get('/pricelist', [PricelistController::class, 'index'])->name('pricelist');
+
+
+// ==========================================
+// HALAMAN INFORMASI & FITUR (FOOTER MENU)
+// ==========================================
+Route::get('/about', [PageController::class, 'about'])->name('page.about');
+Route::get('/privacy', [PageController::class, 'privacy'])->name('page.privacy');
+Route::get('/terms', [PageController::class, 'terms'])->name('page.terms');
+Route::get('/faq', [PageController::class, 'faq'])->name('page.faq');
+Route::get('/leaderboard', [PageController::class, 'leaderboard'])->name('page.leaderboard');
+Route::get('/calculator', [PageController::class, 'calculator'])->name('page.calculator');
+Route::get('/check-region', [PageController::class, 'regionCheck'])->name('page.region');
+Route::get('/join-reseller', [PageController::class, 'reseller'])->name('page.reseller');
 
 // AUTH MEMBER (Login & Register Biasa)
 Route::middleware('guest')->group(function() {
@@ -96,12 +115,11 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     Route::post('/integration/tripay', [IntegrationController::class, 'updateTripay'])->name('admin.integration.tripay.update');
     Route::post('/integration/tripay/check', [IntegrationController::class, 'checkTripay'])->name('admin.integration.tripay.check');
 
-    // --- [PERBAIKAN] Rute Config Web Ditambahkan Kembali ---
-    Route::get('/config/web', function() { 
-        return "<h3>Halaman Konfigurasi Website</h3><p>Fitur ganti nama web, logo, & warna (Coming Soon).</p>"; 
-    })->name('admin.config.web');
+    // --- CONFIG WEB (Logo, Nama, Footer) ---
+    Route::get('/config/web', [ServerController::class, 'webView'])->name('admin.config.web');
+    Route::post('/config/web', [ServerController::class, 'updateWeb'])->name('admin.config.web.update');
 
-    // Setting Server
+    // --- CONFIG SERVER ---
     Route::get('/config/server', [ServerController::class, 'index'])->name('admin.config.server');
     Route::post('/config/server/clear', [ServerController::class, 'clearCache'])->name('admin.server.clear');
     Route::post('/config/server/maintenance', [ServerController::class, 'toggleMaintenance'])->name('admin.server.maintenance');
@@ -111,5 +129,26 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     Route::post('/promos', [PromoController::class, 'store'])->name('admin.promos.store');
     Route::delete('/promos/{id}', [PromoController::class, 'destroy'])->name('admin.promos.destroy');
     Route::post('/promos/{id}/toggle', [PromoController::class, 'toggle'])->name('admin.promos.toggle');
+
+});
+
+// ==========================================
+// 3. MEMBER AREA (Profil & Setting)
+// ==========================================
+Route::middleware(['auth'])->group(function() {
+    
+    // Halaman Profil
+    Route::get('/member/profile', [MemberController::class, 'index'])->name('member.profile');
+    
+    // Proses Update
+    Route::put('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update');
+    Route::put('/member/password', [MemberController::class, 'updatePassword'])->name('member.password.update');
+
+    // Upgrade VIP (Bisa diarahkan ke WA Admin)
+    Route::get('/member/upgrade-vip', function() {
+        $phone = \App\Models\Configuration::getBy('whatsapp_number') ?? '628123456789';
+        $text = "Halo Admin, saya ingin upgrade akun saya menjadi VIP Member.";
+        return redirect("https://wa.me/{$phone}?text=" . urlencode($text));
+    })->name('member.upgrade');
 
 });
