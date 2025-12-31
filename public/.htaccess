@@ -23,3 +23,15 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# ----------------------------------------------------------------------
+# SECURITY HEADERS
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header unset X-Powered-By
+    Header unset Server
+</IfModule>
+ServerSignature Off
+# Catatan: ServerTokens seringkali hanya bisa diatur di config utama server (httpd.conf),
+# tapi tidak ada salahnya dicoba di sini. Jika error 500, hapus baris ServerTokens.
+# ServerTokens Prod

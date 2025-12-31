@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PaymentMethod;
+use Illuminate\Support\Str; // Tambahkan ini
 use Illuminate\Support\Facades\Storage;
 
 class PaymentMethodController extends Controller
@@ -17,32 +18,41 @@ class PaymentMethodController extends Controller
 
     public function update(Request $request, $id)
     {
+        // 1. VALIDASI KETAT (Security Patch)
         $request->validate([
-            'name' => 'required',
-            'flat_fee' => 'required|numeric',
-            'percent_fee' => 'required|numeric',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'name' => 'required|string|max:100',
+            'flat_fee' => 'required|numeric|min:0',
+            'percent_fee' => 'required|numeric|min:0|max:100',
+            // Validasi Gambar: Wajib JPG/PNG/WEBP, Maks 2MB
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,webp|max:2048', 
         ]);
 
         $payment = PaymentMethod::findOrFail($id);
         
         $data = [
-            'name' => $request->name,
+            'name' => strip_tags($request->name), // Hapus tag HTML berbahaya (XSS Protection)
             'flat_fee' => $request->flat_fee,
             'percent_fee' => $request->percent_fee,
             'is_active' => $request->has('is_active') ? 1 : 0,
         ];
 
-        // Upload Gambar Baru (Jika ada)
+        // 2. PROSES UPLOAD AMAN
         if ($request->hasFile('image')) {
-            // Hapus gambar lama jika ada
+            // Hapus gambar lama agar tidak menumpuk sampah
             if ($payment->image && file_exists(public_path($payment->image))) {
-                unlink(public_path($payment->image));
+                @unlink(public_path($payment->image));
             }
 
             $file = $request->file('image');
-            $filename = $payment->code . '.' . $file->getClientOriginalExtension();
+            
+            // [PENTING] Gunakan Str::random() agar nama file tidak bisa ditebak hacker
+            // Jangan pakai nama asli user atau kode payment
+            $filename = 'pay_' . Str::random(40) . '.' . $file->getClientOriginalExtension();
+            
+            // Simpan ke folder public/images/payment
             $file->move(public_path('images/payment'), $filename);
+            
+            // Simpan path ke database
             $data['image'] = '/images/payment/' . $filename;
         }
 
