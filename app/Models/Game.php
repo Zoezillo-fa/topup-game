@@ -9,13 +9,13 @@ class Game extends Model
 {
     use HasFactory;
 
-    // Pastikan semua kolom ini ada di $fillable
     protected $fillable = [
         'name',
         'code',
-        'slug',              // <--- WAJIB
-        'brand_digiflazz',   // <--- WAJIB
-        'endpoint',          // <--- WAJIB
+        'slug',
+        'publisher',        // Tambahkan ini (ada di migration)
+        'brand_digiflazz',
+        'target_endpoint',  // <--- WAJIB ADA (Sesuai migration user)
         'thumbnail',
         'banner',
         'description',
