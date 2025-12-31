@@ -88,7 +88,8 @@
 
             <form id="form-topup" action="{{ route('topup.process') }}" method="POST">
                 @csrf
-                <input type="hidden" name="game_code" id="game_code" value="{{ $game->target_endpoint }}"> <input type="hidden" name="nickname_game" id="nickname_game">
+                <input type="hidden" name="game_code" id="game_code" value="{{ $game->slug }}"> 
+                <input type="hidden" name="nickname_game" id="nickname_game">
 
                 <div class="card bg-card-dark border-0 shadow-lg mb-4 glow-on-hover">
                     <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3">
@@ -103,7 +104,8 @@
                                 <input type="number" class="form-control form-dark" id="userid" name="user_id" placeholder="Contoh: 12345678" required>
                             </div>
                             
-                            @if(str_contains(strtolower($game->code), 'mobile-legend'))
+                            {{-- Input Zone ID hanya muncul jika game mengandung kata 'mobile-legends' --}}
+                            @if(str_contains(strtolower($game->slug), 'mobile-legends'))
                             <div class="col-4 col-md-4">
                                 <label class="small text-white-50 mb-1">Zone ID</label>
                                 <input type="number" class="form-control form-dark" id="zoneid" name="zone_id" placeholder="1234">
@@ -132,7 +134,7 @@
                         <div class="row row-cols-2 row-cols-md-3 g-3">
                             @foreach($products as $product)
                             <div class="col">
-                                {{-- [EDIT] Tambahkan data-price dan data-name --}}
+                                {{-- Radio Button Input --}}
                                 <input type="radio" class="btn-check" name="product_code" id="prod{{ $product->id }}" value="{{ $product->code }}" 
                                     data-price="{{ $product->price }}" 
                                     data-name="{{ $product->name }}" 
@@ -179,10 +181,11 @@
                     <div class="card-body p-0">
                         <div class="accordion accordion-flush" id="paymentAccordion">
                             
+                            {{-- E-WALLET GROUP --}}
                             @if(isset($paymentChannels['e_wallet']) && count($paymentChannels['e_wallet']) > 0)
                             <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-25">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed bg-transparent text-white shadow-none fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-ewallet">
+                                    <button class="accordion-button bg-transparent text-white shadow-none fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-ewallet" aria-expanded="true">
                                         <i class="bi bi-wallet2 text-warning me-2"></i> E-Wallet & QRIS
                                     </button>
                                 </h2>
@@ -191,14 +194,16 @@
                                         <div class="row g-2">
                                             @foreach($paymentChannels['e_wallet'] as $pay)
                                                 <div class="col-6 col-md-4">
-                                                    {{-- [EDIT] Tambah data fee --}}
                                                     <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" 
                                                         data-name="{{ $pay->name }}"
-                                                        data-fee-flat="{{ $pay->admin_fee_flat }}"
-                                                        data-fee-percent="{{ $pay->admin_fee_percent }}"
+                                                        data-fee-flat="{{ $pay->flat_fee }}"
+                                                        data-fee-percent="{{ $pay->percent_fee }}"
                                                         required>
                                                     <label class="btn btn-outline-light w-100 h-100 d-flex flex-column align-items-center justify-content-center py-2 payment-card position-relative" for="pay_{{ $pay->code }}">
-                                                        <img src="{{ $pay->image }}" height="25" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
+                                                        {{-- Cek Gambar URL atau Lokal --}}
+                                                        @php $imgSrc = \Illuminate\Support\Str::startsWith($pay->image, 'http') ? $pay->image : asset($pay->image); @endphp
+                                                        <img src="{{ $imgSrc }}" height="25" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
+                                                        
                                                         <span class="small fw-bold text-white-50 text-center">{{ $pay->name }}</span>
                                                         <div class="check-mark-pay">
                                                             <i class="bi bi-check-circle-fill text-success"></i>
@@ -212,6 +217,7 @@
                             </div>
                             @endif
 
+                            {{-- VIRTUAL ACCOUNT GROUP --}}
                             @if(isset($paymentChannels['virtual_account']) && count($paymentChannels['virtual_account']) > 0)
                             <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-25">
                                 <h2 class="accordion-header">
@@ -224,14 +230,15 @@
                                         <div class="row g-2">
                                             @foreach($paymentChannels['virtual_account'] as $pay)
                                                 <div class="col-6 col-md-4">
-                                                    {{-- [EDIT] Tambah data fee --}}
                                                     <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" 
                                                         data-name="{{ $pay->name }}"
-                                                        data-fee-flat="{{ $pay->admin_fee_flat }}"
-                                                        data-fee-percent="{{ $pay->admin_fee_percent }}"
+                                                        data-fee-flat="{{ $pay->flat_fee }}"
+                                                        data-fee-percent="{{ $pay->percent_fee }}"
                                                         required>
                                                     <label class="btn btn-outline-light w-100 h-100 d-flex flex-column align-items-center justify-content-center py-2 payment-card position-relative" for="pay_{{ $pay->code }}">
-                                                        <img src="{{ $pay->image }}" height="20" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
+                                                        @php $imgSrc = \Illuminate\Support\Str::startsWith($pay->image, 'http') ? $pay->image : asset($pay->image); @endphp
+                                                        <img src="{{ $imgSrc }}" height="20" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
+                                                        
                                                         <span class="small fw-bold text-white-50 text-center">{{ $pay->name }}</span>
                                                         <div class="check-mark-pay">
                                                             <i class="bi bi-check-circle-fill text-success"></i>
@@ -245,44 +252,45 @@
                             </div>
                             @endif
 
-                             @if(isset($paymentChannels['retail']) && count($paymentChannels['retail']) > 0)
-                             <div class="accordion-item bg-transparent">
-                                 <h2 class="accordion-header">
-                                     <button class="accordion-button collapsed bg-transparent text-white shadow-none fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-retail">
-                                         <i class="bi bi-shop text-danger me-2"></i> Minimarket
-                                     </button>
-                                 </h2>
-                                 <div id="flush-retail" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
-                                     <div class="accordion-body">
-                                         <div class="row g-2">
-                                             @foreach($paymentChannels['retail'] as $pay)
-                                                 <div class="col-6 col-md-4">
-                                                     {{-- [EDIT] Tambah data fee --}}
-                                                     <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" 
+                            {{-- RETAIL GROUP --}}
+                            @if(isset($paymentChannels['retail']) && count($paymentChannels['retail']) > 0)
+                            <div class="accordion-item bg-transparent">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-transparent text-white shadow-none fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-retail">
+                                        <i class="bi bi-shop text-danger me-2"></i> Minimarket
+                                    </button>
+                                </h2>
+                                <div id="flush-retail" class="accordion-collapse collapse" data-bs-parent="#paymentAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-2">
+                                            @foreach($paymentChannels['retail'] as $pay)
+                                                <div class="col-6 col-md-4">
+                                                    <input type="radio" class="btn-check" name="payment_method" id="pay_{{ $pay->code }}" value="{{ $pay->code }}" 
                                                         data-name="{{ $pay->name }}"
-                                                        data-fee-flat="{{ $pay->admin_fee_flat }}"
-                                                        data-fee-percent="{{ $pay->admin_fee_percent }}"
+                                                        data-fee-flat="{{ $pay->flat_fee }}"
+                                                        data-fee-percent="{{ $pay->percent_fee }}"
                                                         required>
-                                                     <label class="btn btn-outline-light w-100 h-100 d-flex flex-column align-items-center justify-content-center py-2 payment-card position-relative" for="pay_{{ $pay->code }}">
-                                                         <img src="{{ $pay->image }}" height="25" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
-                                                         <span class="small fw-bold text-white-50 text-center">{{ $pay->name }}</span>
-                                                         <div class="check-mark-pay">
-                                                             <i class="bi bi-check-circle-fill text-success"></i>
-                                                         </div>
-                                                     </label>
-                                                 </div>
-                                             @endforeach
-                                         </div>
-                                     </div>
-                                 </div>
-                             </div>
-                             @endif
+                                                    <label class="btn btn-outline-light w-100 h-100 d-flex flex-column align-items-center justify-content-center py-2 payment-card position-relative" for="pay_{{ $pay->code }}">
+                                                        @php $imgSrc = \Illuminate\Support\Str::startsWith($pay->image, 'http') ? $pay->image : asset($pay->image); @endphp
+                                                        <img src="{{ $imgSrc }}" height="25" class="mb-2 bg-white rounded px-1" alt="{{ $pay->name }}" style="max-width: 80%;">
+                                                        
+                                                        <span class="small fw-bold text-white-50 text-center">{{ $pay->name }}</span>
+                                                        <div class="check-mark-pay">
+                                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
 
                         </div>
                     </div>
                 </div>
 
-                {{-- [EDIT] Ubah type menjadi button dan tambahkan onclick --}}
                 <button type="button" onclick="showConfirmModal()" class="btn btn-gold-gradient w-100 py-3 fw-bold fs-5 rounded-pill shadow-lg hover-scale text-dark mb-5 border-0">
                     <i class="bi bi-cart-check-fill me-2"></i> KONFIRMASI TOP UP
                 </button>
@@ -322,7 +330,7 @@
     </div>
 </div>
 
-{{-- [BARU] Modal Konfirmasi --}}
+{{-- MODAL KONFIRMASI --}}
 <div class="modal fade" id="modalConfirm" tabindex="-1" aria-labelledby="modalConfirmLabel" aria-hidden="true" data-bs-backdrop="static">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="background-color: #1e212b; border: 1px solid rgba(255,255,255,0.1); color: white;">
@@ -386,7 +394,7 @@
 @section('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    // [BARU] Fungsi Format Rupiah
+    // FUNGSI FORMAT RUPIAH
     const formatRupiah = (number) => {
         return new Intl.NumberFormat('id-ID', { 
             style: 'currency', 
@@ -395,7 +403,7 @@
         }).format(number);
     }
 
-    // [BARU] Fungsi Tampilkan Modal
+    // FUNGSI TAMPILKAN MODAL
     function showConfirmModal() {
         // 1. Ambil Value Input
         let userId = $('#userid').val();
@@ -406,7 +414,7 @@
         let product = $('input[name="product_code"]:checked');
         let payment = $('input[name="payment_method"]:checked');
 
-        // 3. Validasi Sederhana
+        // 3. Validasi
         if (!userId) {
             alert("Mohon isi User ID terlebih dahulu!");
             $('#userid').focus();
@@ -431,7 +439,7 @@
 
         // 5. Rumus Kalkulasi Fee (Flat + Persen)
         let adminFee = feeFlat + (price * feePercent / 100);
-        adminFee = Math.ceil(adminFee); // Pembulatan ke atas
+        adminFee = Math.ceil(adminFee);
 
         let totalBayar = price + adminFee;
 
@@ -452,11 +460,12 @@
         myModal.show();
     }
 
-    // [BARU] Fungsi Submit Form
+    // FUNGSI SUBMIT FORM
     function submitForm() {
         $('#form-topup').submit();
     }
 
+    // FUNGSI CEK NAMA GAME (AJAX)
     function cekNamaGame() {
         var userId = $('#userid').val();
         var zoneId = $('#zoneid').val();

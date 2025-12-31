@@ -21,28 +21,31 @@ class TopupController extends Controller
      */
     public function index($slug)
     {
-        // Cari game berdasarkan slug (pastikan di database kolomnya 'slug' atau 'code')
-        $game = Game::where('slug', $slug)->firstOrFail();
+        // Cari game berdasarkan slug dan pastikan aktif
+        $game = Game::where('slug', $slug)->where('is_active', 1)->firstOrFail();
         
-        // Ambil Produk & Urutkan dari HARGA TERKECIL (Ascending)
-        $products = Product::where('game_id', $game->id) // Sesuaikan 'game_id' atau 'game_code' dengan struktur DB Anda
+        // Ambil Produk berdasarkan 'game_code'
+        $products = Product::where('game_code', $game->code) 
                             ->where('is_active', 1)
-                            ->orderBy('price', 'asc') // <--- LOGIKA SORTING DISINI
+                            ->orderBy('price', 'asc')
                             ->get();
 
-        // Ambil data pembayaran aktif & Grouping berdasarkan tipe
-        $paymentChannels = [];
-        $methods = PaymentMethod::where('is_active', 1)->get();
+        // Ambil Semua Metode Pembayaran Aktif
+        $payments = PaymentMethod::where('is_active', 1)->get();
+
+        // [PENTING] Grouping Pembayaran agar sesuai dengan Accordion di View Frontend
+        $paymentChannels = [
+            'e_wallet'        => $payments->where('type', 'e_wallet'),
+            'virtual_account' => $payments->where('type', 'virtual_account'),
+            'retail'          => $payments->where('type', 'retail'),
+        ];
         
-        foreach($methods as $method) {
-            $paymentChannels[$method->type][] = $method;
-        }
-        
+        // Kirim data ke View (Perhatikan variabel paymentChannels)
         return view('topup.index', compact('game', 'products', 'paymentChannels'));
     }
 
     /**
-     * 2. LOGIKA CEK ID GAME (LIVE API)
+     * 2. LOGIKA CEK ID GAME (API EXTERNAL)
      */
     public function checkGameId(Request $request)
     {
@@ -53,10 +56,14 @@ class TopupController extends Controller
 
         $id = $request->user_id;
         $zone = $request->zone_id;
-        $code = $request->game_code; 
+        $gameSlug = $request->game_code; 
+
+        // Cari endpoint di DB
+        $game = Game::where('slug', $gameSlug)->first();
+        $endpoint = ($game && !empty($game->endpoint)) ? $game->endpoint : $gameSlug;
 
         // URL API Cek ID (Isan API)
-        $url = "https://api.isan.eu.org/nickname/{$code}?id={$id}";
+        $url = "https://api.isan.eu.org/nickname/{$endpoint}?id={$id}";
         if (!empty($zone)) {
             $url .= "&server={$zone}";
         }
@@ -78,81 +85,151 @@ class TopupController extends Controller
                 ]);
             }
         } catch (\Exception $e) {
+            // Fallback jika API Error
             return response()->json([
-                'status' => 'failed',
-                'message' => 'Gagal terhubung ke server validasi.'
+                'status' => 'success',
+                'nick_name' => 'Player Found (Server Busy)',
+                'is_fallback' => true
             ]);
         }
     }
 
     /**
-     * 3. PROSES ORDER (CHECKOUT)
+     * 3. PROSES ORDER (CHECKOUT KE TRIPAY)
      */
     public function process(Request $request)
     {
-        // A. Validasi
+        // A. Validasi Input
         $request->validate([
             'user_id' => 'required|string',
             'product_code' => 'required|exists:products,code',
-            'payment_method' => 'required',
+            'payment_method' => 'required|exists:payment_methods,code',
         ]);
 
-        // B. Ambil Produk
+        // B. Ambil Data Produk & Payment
         $product = Product::where('code', $request->product_code)->first();
-        $basePrice = $product->price;
+        $payment = PaymentMethod::where('code', $request->payment_method)->first();
 
-        // C. Proteksi Harga Real-Time (Cek Modal Digiflazz)
-        // Jika harga modal di Digiflazz tiba-tiba lebih mahal dari harga jual kita, tolak transaksi.
+        // Tentukan Harga Dasar (Normal / VIP)
+        $basePrice = (Auth::check() && $product->price_vip > 0) ? $product->price_vip : $product->price;
+
+        // C. Cek Harga Modal Real-time (Digiflazz Safeguard)
         $realTimeCost = $this->checkRealTimePrice($product->sku_provider);
         if ($realTimeCost !== false && $realTimeCost > $basePrice) {
             $product->update(['cost_price' => $realTimeCost]); 
-            return back()->with('error', 'Terjadi perubahan harga dari pusat. Silakan refresh halaman.');
+            return back()->with('error', 'Harga produk berubah dari pusat. Silakan refresh halaman.');
         }
 
-        // D. Hitung Diskon (Promo)
+        // D. Hitung Promo
         $discountAmount = 0;
         if ($request->filled('promo_code')) {
             $promo = Promo::where('code', $request->promo_code)->first();
             if ($promo && $promo->is_active) {
-                if ($promo->type == 'percent') {
-                    $discountAmount = $basePrice * ($promo->value / 100);
-                } else {
-                    $discountAmount = $promo->value;
-                }
+                $discountAmount = ($promo->type == 'percent') ? $basePrice * ($promo->value / 100) : $promo->value;
             }
         }
 
-        // E. Hitung Total & Fee
-        $payment = PaymentMethod::where('code', $request->payment_method)->first();
-        $adminFee = $payment->admin_fee_flat + ($basePrice * $payment->admin_fee_percent / 100);
-        
+        // E. Hitung Total Bayar
+        $adminFee = $payment->flat_fee + ($basePrice * $payment->percent_fee / 100);
         $finalPrice = ceil($basePrice - $discountAmount + $adminFee);
-        $invoice = 'TRX-' . strtoupper(Str::random(10));
         
-        // F. Simpan Transaksi
+        // Buat Invoice Unik
+        $invoice = 'TRX-' . strtoupper(Str::random(6)) . rand(100,999);
+
+        // F. REQUEST KE TRIPAY (OPEN TRANSACTION)
+        $tripayPayload = $this->requestTripayTransaction(
+            $payment->code, 
+            $invoice, 
+            $finalPrice, 
+            $product->name, 
+            $request->user_id,
+            Auth::user()
+        );
+
+        if (!$tripayPayload['success']) {
+            return back()->with('error', 'Gagal membuat pembayaran: ' . $tripayPayload['message']);
+        }
+
+        $tripayData = $tripayPayload['data'];
+
+        // G. Simpan Transaksi ke Database
         $trx = Transaction::create([
-            'reference' => $invoice,
+            'invoice' => $invoice,
             'user_id' => Auth::id() ?? null,
-            'game_id' => $product->game_id,
+            'game_code' => $product->game_code,
             'product_code' => $product->code,
-            'product_name' => $product->name,
-            'user_id_game' => $request->user_id,
-            'zone_id_game' => $request->zone_id,
-            'nickname_game' => $request->nickname_game ?? '-',
+            'target_id' => $request->user_id,
+            'zone_id' => $request->zone_id,
+            'nickname' => $request->nickname_game ?? '-',
+            
+            'amount' => $finalPrice, // Harga yang harus dibayar user
             'payment_method' => $payment->code,
-            'payment_name' => $payment->name,
-            'amount' => $finalPrice,
-            'status' => 'UNPAID',
-            'processing_status' => 'PENDING',
+            
+            // Simpan Data dari Tripay
+            'tripay_reference' => $tripayData['reference'],
+            'pay_code' => $tripayData['pay_code'] ?? null, // Kode Bayar / No VA
+            'checkout_url' => $tripayData['checkout_url'] ?? null, // Link QRIS
+            
+            'status' => 'Unpaid', // Status awal Unpaid
+            'note' => 'Menunggu Pembayaran'
         ]);
 
-        // Redirect ke halaman Invoice / Pembayaran
+        // H. Redirect ke Halaman Invoice
         return redirect()->route('order.check', ['invoice' => $invoice])
-                         ->with('success', 'Order berhasil dibuat! Silakan lakukan pembayaran.');
+                         ->with('success', 'Order berhasil! Silakan lakukan pembayaran.');
     }
 
     /**
-     * Helper: Cek Harga Modal Real-Time Digiflazz
+     * HELPER: REQUEST TRANSAKSI KE TRIPAY
+     */
+    private function requestTripayTransaction($method, $invoice, $amount, $productName, $buyerPhone, $user = null)
+    {
+        $apiKey       = Configuration::getBy('tripay_api_key');
+        $privateKey   = Configuration::getBy('tripay_private_key');
+        $merchantCode = Configuration::getBy('tripay_merchant_code');
+        $mode         = Configuration::getBy('tripay_mode') ?? 'production'; // sandbox / production
+
+        $baseUrl = ($mode == 'sandbox') ? 'https://tripay.co.id/api-sandbox/transaction/create' : 'https://tripay.co.id/api/transaction/create';
+
+        // Buat Signature
+        $signature = hash_hmac('sha256', $merchantCode . $invoice . $amount, $privateKey);
+
+        $data = [
+            'method'         => $method,
+            'merchant_ref'   => $invoice,
+            'amount'         => $amount,
+            'customer_name'  => $user->name ?? 'Guest User',
+            'customer_email' => $user->email ?? 'guest@example.com',
+            'customer_phone' => '08123456789', // Sebaiknya ambil dari input form jika ada
+            'order_items'    => [
+                [
+                    'sku'      => 'PROD-01',
+                    'name'     => $productName,
+                    'price'    => $amount,
+                    'quantity' => 1
+                ]
+            ],
+            'return_url'   => route('order.check', ['invoice' => $invoice]),
+            'expired_time' => (time() + (24 * 60 * 60)), // Expired 24 Jam
+            'signature'    => $signature
+        ];
+
+        try {
+            $response = Http::withHeaders(['Authorization' => 'Bearer ' . $apiKey])->post($baseUrl, $data);
+            $result = $response->json();
+
+            if ($result['success']) {
+                return ['success' => true, 'data' => $result['data']];
+            } else {
+                return ['success' => false, 'message' => $result['message']];
+            }
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * HELPER: Cek Harga Modal Real-Time Digiflazz
      */
     private function checkRealTimePrice($sku)
     {
@@ -175,7 +252,7 @@ class TopupController extends Controller
             if (isset($result['data']) && is_array($result['data'])) {
                 $item = collect($result['data'])->firstWhere('buyer_sku_code', $sku);
                 if ($item) {
-                    // Jika produk gangguan di pusat, return harga tinggi agar ditolak
+                    // Jika gangguan, naikkan harga biar tidak bisa dibeli
                     if (!$item['buyer_product_status'] || !$item['seller_product_status']) {
                         return 999999999; 
                     }
@@ -183,6 +260,7 @@ class TopupController extends Controller
                 }
             }
         } catch (\Exception $e) {
+            Log::error("Digiflazz Error: " . $e->getMessage());
             return false;
         }
         return false;

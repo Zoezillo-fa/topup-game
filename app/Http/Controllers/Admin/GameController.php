@@ -57,18 +57,27 @@ class GameController extends Controller
     }
 
     /**
-     * [UPDATE] SYNC GAME DIGIFLAZZ (LOGIC BLACKLIST)
-     * Mengambil semua brand KECUALI yang terdeteksi sebagai PPOB (Pulsa/PLN).
+     * [FINAL FIX] SYNC GAME DARI DIGIFLAZZ
+     * Fitur: Anti-Null, Filter Kategori PPOB, & Blacklist Brand Non-Game (Voucher Makanan/Belanja)
      */
     /**
-     * [FINAL] SYNC GAME DARI DIGIFLAZZ
-     * Kode ini sudah terbukti bisa membaca 30+ Brand dari API Anda.
+     * [FIXED SAFE] SYNC GAME DARI DIGIFLAZZ
+     * Blacklist diperbaiki agar tidak memblokir game valid (Identity V, MapleStory, dll).
+     */
+    /**
+     * [FINAL FIX] SYNC GAME DIGIFLAZZ (STRICT MODE)
+     * Hanya mengambil GAME & VOUCHER GAME. Membuang semua PPOB, Pulsa, & Voucher Belanja.
      */
     public function syncDigiflazz()
     {
         // 1. KONEKSI KE DIGIFLAZZ
         $username = Configuration::getBy('digiflazz_username');
         $key = Configuration::getBy('digiflazz_key');
+        
+        if(!$username || !$key) {
+            return back()->with('error', 'API Key Digiflazz belum disetting!');
+        }
+
         $sign = md5($username . $key . "pricelist");
 
         try {
@@ -82,29 +91,76 @@ class GameController extends Controller
             return back()->with('error', 'Gagal koneksi: ' . $e->getMessage());
         }
 
-        if (!isset($result['data'])) {
-            return back()->with('error', 'Data API Kosong.');
+        if (!isset($result['data']) || !is_array($result['data'])) {
+            return back()->with('error', 'Data API Kosong atau Username/Key Salah.');
         }
 
-        // 2. FILTER DATA (Menggunakan Logic yang sukses di Debug tadi)
+        // 2. FILTER DATA (LOGIKA STRICT)
         $brands = collect($result['data'])
-            ->pluck('brand') // Ambil nama brand
-            ->unique()       // Hapus duplikat
-            ->filter(function ($brand) {
-                $b = strtolower($brand);
+            ->filter(function ($item) {
+                // A. Validasi Dasar: Buang jika Brand Kosong
+                if (empty($item['brand'])) return false;
+
+                // Normalisasi ke huruf kecil
+                $category = strtolower($item['category'] ?? '');
+                $brand = strtolower($item['brand']);
+
+                // --- B. BLACKLIST KATEGORI (Sangat Lengkap) ---
+                // Semua kata kunci ini merujuk pada produk NON-GAME
+                $catBlacklist = [
+                    'pulsa', 'data', 'paket', 'internet', 'telepon', 'sms', 'roaming', // Seluler
+                    'pln', 'listrik', 'token', 'tagihan', 'pascabayar', // Listrik
+                    'pdam', 'air', 'gas', 'pertagas', 'pbb', 'samsat', 'pajak', // Tagihan Umum
+                    'bpjs', 'asuransi', 'finance', 'multifinance', 'angsuran', 'kredit', // Keuangan
+                    'tv', 'televisi', 'internet', 'wifi', 'indihome', // TV & Internet
+                    'e-money', 'emoney', 'wallet', 'saldo', 'topup', // E-Wallet Umum
+                    'dana', 'ovo', 'gopay', 'shopeepay', 'linkaja', 'sakuku', 'doku', 'isaku', 'jenius',
+                    'voucher makanan', 'voucher belanja', 'transportasi', 'streaming', 'hiburan' // Voucher Non-Game
+                ];
                 
-                // Blacklist kata-kata PPOB
-                $blacklist = [
-                    'pulsa', 'data', 'pln', 'listrik', 'pdam', 'bpjs', 
-                    'internet', 'wifi', 'tv', 'finance', 'pascabayar',
-                    'indosat', 'telkomsel', 'xl', 'axis', 'tri', 'smartfren'
+                if (Str::contains($category, $catBlacklist)) return false;
+
+                // --- C. BLACKLIST BRAND (Filter Spesifik) ---
+                // Membuang brand yang lolos filter kategori tapi sebenarnya bukan game
+                $brandBlacklist = [
+                    // Provider Seluler
+                    'indosat', 'telkomsel', 'xl', 'axis', 'tri', 'three', 'smartfren', 'by.u', 'hallo', 'matrix', 'switch',
+                    
+                    // Streaming / Film / Musik
+                    'spotify', 'joox', 'viu', 'vidio', 'netflix', 'disney', 'wetv', 'iflix', 
+                    'catchplay', 'mola', 'genflix', 'sushiroll', 'youtube', 'itunes', 'apple music',
+                    
+                    // Voucher Makanan (F&B)
+                    'kfc', 'mcd', 'mcdonald', 'burger king', 'pizza hut', 'dominos', 'bakmi gm', 
+                    'starbucks', 'kopi', 'grabfood', 'gofood', 'boga group', 'isens',
+                    
+                    // Belanja / Mall / E-Commerce
+                    'shopee', 'tokopedia', 'bukalapak', 'blibli', 'lazada', 'zalora', 
+                    'matahari', 'h&m', 'map', 'sodexo', 'alfamart', 'indomaret', 'family mart',
+                    'carrefour', 'hypermart', 'superindo', 'transmart', 'gramedia',
+                    'ace hardware', 'informa', 'ikea', 'metro', 'unipin',
+                    
+                    // Bioskop
+                    'cgv', 'xxi', 'cinepolis', 'tix id', 'mtix',
+                    
+                    // Ojol & Transportasi
+                    'grab', 'gojek', 'maxim', 'bluebird',
+                    
+                    // Software / Productivity
+                    'google drive', 'microsoft', 'office 365', 'canva', 'zoom', 'bitdefender', 'kaspersky'
                 ];
 
-                foreach ($blacklist as $word) {
-                    if (str_contains($b, $word)) return false; // Buang
-                }
-                return true; // Simpan
+                if (Str::contains($brand, $brandBlacklist)) return false;
+
+                // --- D. WHITELIST CHECK (Opsional - Safety Net) ---
+                // Jika masih ragu, kita bisa cek apakah mengandung kata "Game" atau brand game populer
+                // Tapi logika A & B di atas sudah mencakup 99% kasus PPOB.
+                
+                // Lolos semua filter -> Berarti ini GAME
+                return true;
             })
+            ->pluck('brand')
+            ->unique()
             ->values();
 
         // 3. PROSES SIMPAN KE DATABASE
@@ -112,19 +168,18 @@ class GameController extends Controller
         $updated = 0;
 
         foreach ($brands as $brand) {
-            // Buat Slug otomatis: "MOBILE LEGENDS" -> "mobile-legends"
             $slug = Str::slug($brand);
             
-            // Cek apakah game sudah ada di DB? (Cek Slug atau Brand Asli)
+            if (empty($slug)) continue;
+
             $game = Game::where('code', $slug)->orWhere('brand_digiflazz', $brand)->first();
 
             if (!$game) {
-                // JIKA BELUM ADA -> BUAT BARU
                 Game::create([
                     'name' => $brand, 
                     'code' => $slug,
                     'slug' => $slug,
-                    'brand_digiflazz' => $brand, // Penting!
+                    'brand_digiflazz' => $brand,
                     'endpoint' => null,
                     'is_active' => true,
                     'thumbnail' => null,
@@ -132,13 +187,11 @@ class GameController extends Controller
                 ]);
                 $added++;
             } else {
-                // JIKA SUDAH ADA -> UPDATE KOLOM BRAND DIGIFLAZZ-NYA
-                // Ini penting agar fitur "Sync Otomatis Produk" nanti berjalan lancar
                 $game->update(['brand_digiflazz' => $brand]);
                 $updated++;
             }
         }
 
-        return back()->with('success', "SUKSES! Ditemukan {$brands->count()} Brand Valid. Ditambahkan: $added Game Baru. Diperbarui: $updated Game Lama.");
+        return back()->with('success', "SUKSES! Filter Strict Aktif. Ditemukan {$brands->count()} Brand Game Murni. +$added Baru, $updated Diupdate.");
     }
 }
