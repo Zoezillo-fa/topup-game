@@ -79,9 +79,11 @@ Route::get('/topup', function() {
 // Halaman Detail Game (Contoh: /topup/mobile-legends)
 Route::get('/topup/{slug}', [TopupController::class, 'index'])->name('topup.index');
 
-// Proses Transaksi
-Route::post('/topup/process', [TopupController::class, 'process'])->name('topup.process');
-Route::post('/api/check-game-id', [TopupController::class, 'checkGameId'])->name('api.checkGameId');
+// Batasi maksimal 10 request per 1 menit untuk order
+Route::middleware(['throttle:10,1'])->post('/topup/process', [TopupController::class, 'process'])->name('topup.process');
+
+// Batasi maksimal 30 request per 1 menit untuk cek ID (Mencegah spam API)
+Route::middleware(['throttle:30,1'])->post('/api/check-game-id', [TopupController::class, 'checkGameId'])->name('api.checkGameId');
 
 // Cek Pesanan / Invoice
 Route::get('/order/check', [OrderController::class, 'index'])->name('order.check');
