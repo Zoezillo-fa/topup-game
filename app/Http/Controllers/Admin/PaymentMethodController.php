@@ -5,117 +5,200 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PaymentMethod;
-use Illuminate\Support\Str; // Tambahkan ini
-use Illuminate\Support\Facades\Storage;
+use App\Models\Configuration;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 
 class PaymentMethodController extends Controller
 {
     public function index()
     {
         $payments = PaymentMethod::all();
-        return view('admin.integration.payment.index', compact('payments'));
+        
+        $gatewayStatus = [
+            'tripay' => Configuration::getBy('gateway_tripay_active') == '1',
+            'xendit' => Configuration::getBy('gateway_xendit_active') == '1',
+        ];
+
+        return view('admin.integration.payment.index', compact('payments', 'gatewayStatus'));
+    }
+
+    public function updateGatewayStatus(Request $request)
+    {
+        Configuration::set('gateway_tripay_active', $request->has('tripay') ? '1' : '0');
+        Configuration::set('gateway_xendit_active', $request->has('xendit') ? '1' : '0');
+
+        return back()->with('success', 'Status Payment Gateway berhasil diperbarui!');
+    }
+
+    public function syncAuto()
+    {
+        $tripayActive = Configuration::getBy('gateway_tripay_active') == '1';
+        $xenditActive = Configuration::getBy('gateway_xendit_active') == '1';
+        $message = [];
+
+        // 1. TRIPAY (Metode Pembayaran Utama - Sync Semua)
+        if ($tripayActive) {
+            $res = $this->fetchTripayChannels();
+            if ($res['success']) {
+                $message[] = "Tripay: " . $res['count'] . " metode.";
+            } else {
+                return back()->with('error', "Tripay Error: " . $res['message']);
+            }
+        } else {
+            $deleted = PaymentMethod::where('provider', 'tripay')->delete();
+            $message[] = "Tripay: $deleted dihapus.";
+        }
+
+        // 2. XENDIT (KHUSUS QRIS SAJA)
+        if ($xenditActive) {
+            // Kita hapus metode Xendit selain QRIS (jika ada sisa metode lama)
+            PaymentMethod::where('provider', 'xendit')->where('code', '!=', 'QRIS')->delete();
+            
+            $count = $this->seedXenditQRIS();
+            $message[] = "Xendit: QRIS disinkronkan.";
+        } else {
+            $deleted = PaymentMethod::where('provider', 'xendit')->delete();
+            $message[] = "Xendit: $deleted dihapus.";
+        }
+
+        return back()->with('success', 'Sync Selesai! ' . implode(' | ', $message));
+    }
+
+    // --- HELPER XENDIT: HANYA QRIS ---
+    private function seedXenditQRIS()
+    {
+        // Ganti kode unik agar tidak bentrok dengan Tripay
+        $code = 'QRIS_XENDIT'; 
+        
+        $exists = PaymentMethod::where('code', $code)->where('provider', 'xendit')->exists();
+        
+        if(!$exists) {
+            PaymentMethod::create([
+                'code' => $code, // Gunakan kode baru
+                'name' => 'QRIS Xendit (Isi Saldo)', // Nama diperjelas
+                'provider' => 'xendit',
+                'flat_fee' => 0,
+                'percent_fee' => 0.7, 
+                'image' => null, 
+                'is_active' => 1,
+                'type' => 'e_wallet'
+            ]);
+            return 1;
+        }
+        return 0;
+    }
+
+    // --- HELPER TRIPAY (TETAP SAMA) ---
+    private function fetchTripayChannels()
+    {
+        $apiKey = Configuration::getBy('tripay_api_key');
+        $mode   = Configuration::getBy('tripay_mode') ?? 'production';
+        $baseUrl = ($mode == 'sandbox') ? 'https://tripay.co.id/api-sandbox' : 'https://tripay.co.id/api';
+
+        if (!$apiKey) return ['success' => false, 'message' => 'API Key belum diisi'];
+
+        try {
+            $response = Http::withHeaders(['Authorization' => 'Bearer ' . $apiKey])
+                            ->get($baseUrl . '/merchant/payment-channel');
+            $result = $response->json();
+
+            if (!isset($result['success']) || !$result['success']) {
+                return ['success' => false, 'message' => $result['message'] ?? 'Unknown Error'];
+            }
+
+            foreach ($result['data'] as $channel) {
+                PaymentMethod::updateOrCreate(
+                    ['code' => $channel['code']], 
+                    [
+                        'name' => $channel['name'],
+                        'provider' => 'tripay',
+                        'flat_fee' => $channel['total_fee']['flat'] ?? 0,
+                        'percent_fee' => $channel['total_fee']['percent'] ?? 0,
+                        'image' => $channel['icon_url'],
+                        'is_active' => $channel['active'] ? 1 : 0,
+                        'type' => $this->mapGroupType($channel['group']),
+                    ]
+                );
+            }
+            return ['success' => true, 'count' => count($result['data'])];
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
+
+    public function store(Request $request)
+    {
+        // ... (Kode store sama seperti sebelumnya, tidak berubah) ...
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'code' => 'required|string|unique:payment_methods,code',
+            'provider' => 'required|in:tripay,xendit,manual',
+            'flat_fee' => 'required|numeric|min:0',
+            'percent_fee' => 'required|numeric|min:0|max:100',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        $data = [
+            'name' => strip_tags($request->name),
+            'code' => $request->code,
+            'provider' => $request->provider,
+            'flat_fee' => $request->flat_fee,
+            'percent_fee' => $request->percent_fee,
+            'is_active' => $request->has('is_active') ? 1 : 0,
+            'type' => 'manual',
+        ];
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = 'pay_' . Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('images/payment'), $filename);
+            $data['image'] = '/images/payment/' . $filename;
+        }
+
+        PaymentMethod::create($data);
+        return back()->with('success', 'Metode pembayaran baru berhasil ditambahkan!');
     }
 
     public function update(Request $request, $id)
     {
-        // 1. VALIDASI KETAT (Security Patch)
+        // ... (Kode update sama seperti sebelumnya, tidak berubah) ...
         $request->validate([
             'name' => 'required|string|max:100',
+            'provider' => 'required|in:tripay,xendit,manual',
             'flat_fee' => 'required|numeric|min:0',
             'percent_fee' => 'required|numeric|min:0|max:100',
-            // Validasi Gambar: Wajib JPG/PNG/WEBP, Maks 2MB
-            'image' => 'nullable|file|mimes:jpeg,png,jpg,webp|max:2048', 
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $payment = PaymentMethod::findOrFail($id);
         
         $data = [
-            'name' => strip_tags($request->name), // Hapus tag HTML berbahaya (XSS Protection)
+            'name' => strip_tags($request->name),
+            'provider' => $request->provider,
             'flat_fee' => $request->flat_fee,
             'percent_fee' => $request->percent_fee,
             'is_active' => $request->has('is_active') ? 1 : 0,
         ];
 
-        // 2. PROSES UPLOAD AMAN
+        if ($request->filled('code')) {
+            $data['code'] = $request->code;
+        }
+
         if ($request->hasFile('image')) {
-            // Hapus gambar lama agar tidak menumpuk sampah
             if ($payment->image && file_exists(public_path($payment->image))) {
                 @unlink(public_path($payment->image));
             }
-
             $file = $request->file('image');
-            
-            // [PENTING] Gunakan Str::random() agar nama file tidak bisa ditebak hacker
-            // Jangan pakai nama asli user atau kode payment
             $filename = 'pay_' . Str::random(40) . '.' . $file->getClientOriginalExtension();
-            
-            // Simpan ke folder public/images/payment
             $file->move(public_path('images/payment'), $filename);
-            
-            // Simpan path ke database
             $data['image'] = '/images/payment/' . $filename;
         }
 
         $payment->update($data);
-
         return back()->with('success', 'Metode pembayaran berhasil diperbarui!');
     }
 
-    /**
-     * FITUR BARU: Ambil Data Channel & Fee dari Tripay Otomatis
-     */
-    public function syncTripay()
-    {
-        // 1. Ambil Konfigurasi Tripay dari Database
-        $apiKey = \App\Models\Configuration::getBy('tripay_api_key');
-        $mode   = \App\Models\Configuration::getBy('tripay_mode') ?? 'production'; // 'sandbox' atau 'production'
-
-        if (!$apiKey) {
-            return back()->with('error', 'API Key Tripay belum diisi di menu Integrasi!');
-        }
-
-        // 2. Tentukan URL API (Sandbox atau Production)
-        $baseUrl = ($mode == 'sandbox') ? 'https://tripay.co.id/api-sandbox' : 'https://tripay.co.id/api';
-        
-        try {
-            // 3. Request ke Tripay
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey
-            ])->get($baseUrl . '/merchant/payment-channel');
-
-            $result = $response->json();
-
-            // Cek jika Gagal
-            if (!isset($result['success']) || $result['success'] !== true) {
-                return back()->with('error', 'Gagal koneksi ke Tripay: ' . ($result['message'] ?? 'Unknown Error'));
-            }
-
-            // 4. Looping Data Channel
-            foreach ($result['data'] as $channel) {
-                // Cari data di DB berdasarkan kode (Contoh: QRIS, OVO)
-                // Jika ada diupdate, jika tidak ada dibuat baru
-                \App\Models\PaymentMethod::updateOrCreate(
-                    ['code' => $channel['code']], 
-                    [
-                        'name' => $channel['name'],
-                        // Ambil Total Fee (Flat & Persen) yang dibebankan ke Customer
-                        'flat_fee' => $channel['total_fee']['flat'] ?? 0,
-                        'percent_fee' => $channel['total_fee']['percent'] ?? 0,
-                        'image' => $channel['icon_url'], // Pakai icon dari Tripay langsung
-                        'is_active' => $channel['active'] ? 1 : 0, // Ikuti status aktif Tripay
-                        'type' => $this->mapGroupType($channel['group']), // Helper untuk grouping (optional)
-                    ]
-                );
-            }
-
-            return back()->with('success', 'Berhasil menyinkronkan ' . count($result['data']) . ' metode pembayaran dari Tripay!');
-
-        } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
-        }
-    }
-
-    // Helper kecil untuk mengelompokkan tipe pembayaran (Virtual Account / E-Wallet)
     private function mapGroupType($groupName)
     {
         if (str_contains(strtolower($groupName), 'virtual')) return 'virtual_account';

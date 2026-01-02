@@ -18,7 +18,7 @@
             top: 0; left: 0;
             color: #a0aaec;
             overflow-y: auto;
-            z-index: 1050; /* Z-index tinggi agar di atas konten */
+            z-index: 1050;
             transition: all 0.3s;
         }
         
@@ -42,7 +42,7 @@
         .sidebar .nav-link:hover, .sidebar .nav-link.active {
             background: rgba(255,255,255,0.05);
             color: #fff;
-            border-left: 4px solid #facc15; /* Aksen Kuning */
+            border-left: 4px solid #facc15;
         }
         .sidebar .nav-link i { margin-right: 12px; font-size: 1.1rem; width: 20px; text-align: center; }
         
@@ -67,18 +67,25 @@
             font-weight: 700;
         }
         
-        /* Dropdown Submenu */
+        /* Dropdown Submenu Level 1 */
         .submenu { background: rgba(0,0,0,0.15); }
         .submenu .nav-link { 
             font-size: 0.9rem; 
-            padding: 10px 20px 10px 52px; /* Indentasi submenu */
+            padding: 10px 20px 10px 52px; /* Indentasi Level 1 */
             border-left: none !important;
         }
         .submenu .nav-link:hover, .submenu .nav-link.active {
             color: #facc15;
             background: transparent;
         }
-        
+
+        /* Dropdown Submenu Level 2 (Nested) */
+        .submenu-nested { background: rgba(0,0,0,0.2); }
+        .submenu-nested .nav-link {
+            padding-left: 70px !important; /* Indentasi Level 2 Lebih Dalam */
+            font-size: 0.85rem;
+        }
+
         /* Scrollbar Halus */
         .sidebar::-webkit-scrollbar { width: 5px; }
         .sidebar::-webkit-scrollbar-track { background: #242733; }
@@ -86,14 +93,9 @@
 
         /* Responsif untuk Mobile */
         @media (max-width: 768px) {
-            .sidebar { 
-                margin-left: -260px; 
-                box-shadow: 5px 0 15px rgba(0,0,0,0.3); /* Bayangan saat muncul */
-            }
+            .sidebar { margin-left: -260px; box-shadow: 5px 0 15px rgba(0,0,0,0.3); }
             .sidebar.show { margin-left: 0; }
             .main-content { margin-left: 0; }
-            
-            /* Overlay Effect (Opsional: Membuat background gelap saat menu buka) */
             .sidebar-open-overlay {
                 position: fixed;
                 top: 0; left: 0; width: 100%; height: 100%;
@@ -138,6 +140,7 @@
                 </a>
             </li>
 
+            {{-- MENU INTEGRASI (DIPERBARUI DENGAN NESTED MENU) --}}
             <div class="section-header">Integrasi API</div>
             <li class="nav-item">
                 <a class="nav-link {{ request()->is('admin/integration*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuIntegration" aria-expanded="{{ request()->is('admin/integration*') ? 'true' : 'false' }}">
@@ -146,26 +149,52 @@
                 </a>
                 <div class="collapse {{ request()->is('admin/integration*') ? 'show' : '' }}" id="menuIntegration">
                     <ul class="nav flex-column submenu">
+                        
+                        {{-- 1. Supplier (Digiflazz) --}}
                         <li class="nav-item">
                             <a href="{{ route('admin.integration.digiflazz') }}" class="nav-link {{ request()->routeIs('admin.integration.digiflazz') ? 'active' : '' }}">
-                                <i class="bi bi-box-seam"></i> Digiflazz (Stok)
+                                <i class="bi bi-box-seam"></i> Supplier (Digiflazz)
                             </a>
                         </li>
+
+                        {{-- 2. API (Apigames) --}}
                         <li class="nav-item">
                             <a href="{{ route('admin.integration.apigames') }}" class="nav-link {{ request()->routeIs('admin.integration.apigames') ? 'active' : '' }}">
-                                <i class="bi bi-person-check-fill"></i> Apigames (Cek ID)
+                                <i class="bi bi-person-check-fill"></i> API (Apigames)
                             </a>
                         </li>
+
+                        {{-- 3. Payment Gateway (NESTED DROPDOWN) --}}
                         <li class="nav-item">
-                            <a href="{{ route('admin.integration.tripay') }}" class="nav-link {{ request()->routeIs('admin.integration.tripay') ? 'active' : '' }}">
-                                <i class="bi bi-credit-card"></i> Tripay (API)
+                            <a class="nav-link {{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuPaymentGateway" aria-expanded="{{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*') ? 'true' : 'false' }}">
+                                <i class="bi bi-credit-card-2-front"></i> Payment Gateway
+                                <i class="bi bi-chevron-down ms-auto small" style="font-size: 0.8em;"></i>
                             </a>
+                            
+                            {{-- Sub-Menu Level 2 --}}
+                            <div class="collapse {{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*') ? 'show' : '' }}" id="menuPaymentGateway">
+                                <ul class="nav flex-column submenu-nested">
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.integration.tripay') }}" class="nav-link {{ request()->routeIs('admin.integration.tripay') ? 'active' : '' }}">
+                                            <i class="bi bi-arrow-return-right small me-2"></i> Tripay
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.integration.xendit') }}" class="nav-link {{ request()->routeIs('admin.integration.xendit') ? 'active' : '' }}">
+                                            <i class="bi bi-arrow-return-right small me-2"></i> Xendit
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
+
+                        {{-- 4. Metode Pembayaran --}}
                         <li class="nav-item">
                             <a href="{{ route('admin.integration.payment') }}" class="nav-link {{ request()->routeIs('admin.integration.payment*') ? 'active' : '' }}">
                                 <i class="bi bi-wallet2"></i> Metode Pembayaran
                             </a>
                         </li>
+
                     </ul>
                 </div>
             </li>
@@ -224,7 +253,6 @@
     <div class="main-content">
         <nav class="navbar navbar-light bg-white shadow-sm mb-4 rounded px-4 py-3 d-flex justify-content-between align-items-center">
             
-            {{-- Tombol Toggle dengan ID --}}
             <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarToggle" onclick="toggleSidebar()">
                 <i class="bi bi-list"></i>
             </button>
@@ -247,22 +275,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    {{-- SCRIPT TOGGLE & CLOSE ON CLICK OUTSIDE --}}
     <script>
         function toggleSidebar() {
             document.getElementById('sidebarMenu').classList.toggle('show');
             document.getElementById('mobileOverlay').classList.toggle('show');
         }
 
-        // Logic menutup sidebar jika layar diklik (opsi tambahan jika overlay tidak cukup)
         document.addEventListener('click', function(event) {
             var sidebar = document.getElementById('sidebarMenu');
             var toggleBtn = document.getElementById('sidebarToggle');
             var overlay = document.getElementById('mobileOverlay');
 
-            // Jika klik terjadi BUKAN di sidebar, BUKAN di tombol, dan sidebar sedang terbuka
             if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target) && sidebar.classList.contains('show')) {
-                // Jangan tutup jika yang diklik adalah overlay (karena overlay punya onclick sendiri)
                 if (event.target !== overlay) {
                     toggleSidebar();
                 }

@@ -10,7 +10,23 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'reference', 'user_id_game', 'nickname_game', 'product_code', 
-        'amount', 'status', 'tripay_reference', 'processing_status'
+        'user_id',
+        'reference', // <--- Penting ditambahkan
+        'service',
+        'service_name',
+        'target',
+        'amount',
+        'price',
+        'status',
+        'payment_method',
+        'payment_provider',
+        'sn', // Serial Number (biasanya diisi setelah sukses)
+        'note'
     ];
+
+    // Relasi ke User
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -6,8 +6,11 @@
 <div class="container py-5">
     <div class="row">
         
+        {{-- KOLOM KIRI --}}
         <div class="col-md-4 mb-4">
-            <div class="card bg-dark border-secondary shadow-sm">
+            
+            {{-- 1. CARD PROFIL --}}
+            <div class="card bg-dark border-secondary shadow-sm mb-3">
                 <div class="card-body text-center py-5">
                     <div class="mb-3">
                         <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=facc15&color=1a1d26&size=128" 
@@ -28,6 +31,27 @@
                 </div>
             </div>
 
+            {{-- 2. CARD SALDO (BARU DITAMBAHKAN) --}}
+            <div class="card bg-dark shadow-sm mb-3" style="border: 1px solid #facc15;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-secondary small text-uppercase fw-bold">Saldo Akun</span>
+                        <i class="bi bi-wallet2 text-warning fs-4"></i>
+                    </div>
+                    <h2 class="fw-bold text-white mb-3">
+                        {{-- Menggunakan null coalescing operator (?? 0) untuk keamanan --}}
+                        Rp {{ number_format(Auth::user()->balance ?? 0, 0, ',', '.') }}
+                    </h2>
+                    <div class="d-grid">
+                        {{-- Cek apakah route deposit sudah ada agar tidak error --}}
+                        <a href="{{ Route::has('deposit.index') ? route('deposit.index') : '#' }}" class="btn btn-warning fw-bold text-dark">
+                            <i class="bi bi-plus-circle-fill me-2"></i> ISI SALDO
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 3. BANNER UPGRADE VIP --}}
             @if(Auth::user()->role != 'vip')
             <div class="card bg-gradient-gold border-0 mt-3 text-dark">
                 <div class="card-body">
@@ -41,6 +65,7 @@
             @endif
         </div>
 
+        {{-- KOLOM KANAN --}}
         <div class="col-md-8">
             
             @if(session('success'))
@@ -55,6 +80,7 @@
                 </div>
             @endif
 
+            {{-- FORM EDIT PROFIL --}}
             <div class="card bg-dark border-secondary mb-4">
                 <div class="card-header border-secondary bg-transparent py-3">
                     <h6 class="text-white mb-0 fw-bold"><i class="bi bi-person-gear me-2 text-warning"></i>Edit Profil</h6>
@@ -81,6 +107,7 @@
                 </div>
             </div>
 
+            {{-- FORM GANTI PASSWORD --}}
             <div class="card bg-dark border-secondary">
                 <div class="card-header border-secondary bg-transparent py-3">
                     <h6 class="text-white mb-0 fw-bold"><i class="bi bi-lock me-2 text-warning"></i>Ganti Password</h6>

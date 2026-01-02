@@ -80,24 +80,44 @@
                         <h5 class="fw-bold text-white mb-0"><span class="badge bg-warning text-dark rounded-circle me-2">1</span> Masukkan ID Akun</h5>
                     </div>
                     <div class="card-body">
-                        <div class="row g-2">
-                            <div class="col-6 col-md-6">
-                                <label class="small text-white-50 mb-1">User ID</label>
-                                <input type="number" class="form-control form-dark" id="userid" name="user_id" placeholder="Contoh: 12345678" required>
-                            </div>
+                        <div class="row g-3">
+                            
+                            {{-- LOGIKA TAMPILAN KHUSUS MOBILE LEGENDS (Ada Zone ID) --}}
                             @if(str_contains(strtolower($game->slug), 'mobile-legends'))
-                            <div class="col-4 col-md-4">
-                                <label class="small text-white-50 mb-1">Zone ID</label>
-                                <input type="number" class="form-control form-dark" id="zoneid" name="zone_id" placeholder="1234">
-                            </div>
+                                <div class="col-7 col-md-8">
+                                    <label class="small text-white-50 mb-1">User ID</label>
+                                    <input type="number" class="form-control form-dark" id="userid" name="user_id" placeholder="Contoh: 12345678" required>
+                                </div>
+                                <div class="col-5 col-md-4">
+                                    <label class="small text-white-50 mb-1">Zone ID</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control form-dark border-end-0" id="zoneid" name="zone_id" placeholder="1234">
+                                        {{-- Tombol Nempel dengan Zone ID --}}
+                                        <button type="button" onclick="cekNamaGame()" class="btn btn-warning fw-bold text-dark border-start-0" title="Cek Nickname" style="z-index: 0;">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            {{-- LOGIKA TAMPILAN GAME LAIN (Hanya User ID) --}}
+                            @else
+                                <div class="col-12">
+                                    <label class="small text-white-50 mb-1">User ID / Player ID</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-dark border-end-0" id="userid" name="user_id" placeholder="Masukkan ID Akun Anda" required>
+                                        {{-- Tombol Nempel dengan User ID --}}
+                                        <button type="button" onclick="cekNamaGame()" class="btn btn-warning fw-bold text-dark border-start-0" title="Cek Nickname" style="z-index: 0;">
+                                            <i class="bi bi-search me-1"></i> Cek ID
+                                        </button>
+                                    </div>
+                                </div>
                             @endif
-                            <div class="col d-flex align-items-end">
-                                <button type="button" onclick="cekNamaGame()" class="btn btn-warning w-100 fw-bold text-dark shadow-warning" title="Cek Nickname">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                            </div>
+
                         </div>
-                        <div class="mt-2 text-end">
+                        
+                        {{-- Hasil Cek Nickname --}}
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-white-50 fst-italic">*Pastikan ID yang dimasukkan benar.</small>
                             <small class="fw-bold" id="nick-result"></small>
                         </div>
                     </div>
@@ -145,6 +165,39 @@
                         <h5 class="fw-bold text-white mb-0"><span class="badge bg-warning text-dark rounded-circle me-2">4</span> Metode Pembayaran</h5>
                     </div>
                     <div class="card-body p-0">
+                        
+                        {{-- OPSI SALDO MEMBER (Hanya muncul jika login) --}}
+                        @auth
+                        <div class="p-3 border-bottom border-secondary border-opacity-25">
+                            <h6 class="fw-bold text-white mb-3"><i class="bi bi-wallet-fill text-success me-2"></i>Saldo Akun</h6>
+                            <div class="row">
+                                <div class="col-12">
+                                    {{-- Input Radio Khusus Saldo --}}
+                                    <input type="radio" class="btn-check" name="payment_method" id="pay_saldo" value="SALDO" 
+                                           data-name="Saldo Akun" 
+                                           data-fee-flat="0" 
+                                           data-fee-percent="0">
+                                    
+                                    <label class="btn btn-outline-light w-100 d-flex justify-content-between align-items-center p-3 payment-card position-relative" for="pay_saldo">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-white rounded p-2 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                <i class="bi bi-wallet2 text-dark fs-3"></i>
+                                            </div>
+                                            <div class="text-start">
+                                                <span class="d-block fw-bold text-white">Saldo Member</span>
+                                                <small class="text-warning">Sisa Saldo: Rp {{ number_format(Auth::user()->balance, 0, ',', '.') }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-success bg-opacity-25 text-success border border-success mb-1">Tanpa Biaya Admin</span>
+                                        </div>
+                                        <div class="check-mark-pay"><i class="bi bi-check-circle-fill text-success"></i></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        @endauth
+
                         <div class="accordion accordion-flush" id="paymentAccordion">
                             @foreach($paymentChannels as $type => $channels)
                                 @if(count($channels) > 0)
@@ -154,7 +207,7 @@
                                             <i class="bi bi-wallet2 text-warning me-2"></i> {{ ucfirst(str_replace('_', ' ', $type)) }}
                                         </button>
                                     </h2>
-                                    <div id="flush-{{ $type }}" class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}" data-bs-parent="#paymentAccordion">
+                                    <div id="flush-{{ $type }}" class="accordion-collapse collapse {{ $loop->first && !Auth::check() ? 'show' : '' }}" data-bs-parent="#paymentAccordion">
                                         <div class="accordion-body">
                                             <div class="row g-2">
                                                 @foreach($channels as $pay)
@@ -352,5 +405,17 @@
     .hover-scale:hover { transform: scale(1.02); }
     .glow-on-hover { transition: box-shadow 0.3s ease; }
     .glow-on-hover:hover { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important; }
+    /* HILANGKAN SPINNER (PANAH ATAS BAWAH) DI INPUT NUMBER */
+    /* Untuk Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* Untuk Firefox */
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
 </style>
 @endsection

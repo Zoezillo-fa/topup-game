@@ -114,6 +114,7 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     // --- MANAJEMEN USER & TRANSAKSI ---
     Route::resource('users', UserController::class, ['as' => 'admin']);
     Route::resource('transactions', TransactionController::class, ['as' => 'admin'])->only(['index', 'update']);
+    Route::post('/users/{id}/balance', [UserController::class, 'updateBalance'])->name('admin.users.balance');
     
     // --- MANAJEMEN GAME ---
     Route::resource('games', GameController::class, ['as' => 'admin'])->except(['create', 'show']);
@@ -142,15 +143,29 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     Route::post('/integration/tripay', [IntegrationController::class, 'updateTripay'])->name('admin.integration.tripay.update');
     Route::post('/integration/tripay/check', [IntegrationController::class, 'checkTripay'])->name('admin.integration.tripay.check');
 
-    // 3. Apigames (Cek ID Game)
+    // 3. Xendit (Payment Gateway) [BARU]
+    Route::get('/integration/xendit', [IntegrationController::class, 'xendit'])->name('admin.integration.xendit');
+    Route::post('/integration/xendit', [IntegrationController::class, 'updateXendit'])->name('admin.integration.xendit.update');
+    Route::post('/integration/xendit/check', [IntegrationController::class, 'checkXendit'])->name('admin.integration.xendit.check');
+
+    // 4. Apigames (Cek ID Game)
     Route::get('/integration/apigames', [IntegrationController::class, 'apigames'])->name('admin.integration.apigames');
     Route::post('/integration/apigames', [IntegrationController::class, 'updateApigames'])->name('admin.integration.apigames.update');
     Route::post('/integration/apigames/check', [IntegrationController::class, 'checkApigames'])->name('admin.integration.apigames.check');
 
-    // 4. Metode Pembayaran (Manual & Channel)
+    // 5. Metode Pembayaran (Multi-Gateway) [UPDATED]
     Route::get('/integration/payment', [PaymentMethodController::class, 'index'])->name('admin.integration.payment');
+    
+    // Simpan Manual
+    Route::post('/integration/payment', [PaymentMethodController::class, 'store'])->name('admin.integration.payment.store'); 
+    // Update Data
     Route::put('/integration/payment/{id}', [PaymentMethodController::class, 'update'])->name('admin.integration.payment.update');
-    Route::post('/integration/payment/sync', [PaymentMethodController::class, 'syncTripay'])->name('admin.integration.payment.sync');
+    
+    // [BARU] Update Status Gateway (Enable/Disable)
+    Route::post('/integration/payment/status', [PaymentMethodController::class, 'updateGatewayStatus'])->name('admin.integration.payment.status');
+    
+    // [BARU] Sync Otomatis (Tripay & Xendit)
+    Route::post('/integration/payment/sync-auto', [PaymentMethodController::class, 'syncAuto'])->name('admin.integration.payment.sync');
    
     // --- CONFIG WEB (Logo, Nama, Footer) ---
     Route::get('/config/web', [ServerController::class, 'webView'])->name('admin.config.web');
@@ -176,6 +191,10 @@ Route::middleware(['auth'])->group(function() {
     
     // Halaman Profil
     Route::get('/member/profile', [MemberController::class, 'index'])->name('member.profile');
+
+    // FITUR DEPOSIT / ISI SALDO
+    Route::get('/member/deposit', [\App\Http\Controllers\Member\DepositController::class, 'index'])->name('deposit.index');
+    Route::post('/member/deposit', [\App\Http\Controllers\Member\DepositController::class, 'store'])->name('deposit.store');
     
     // Proses Update
     Route::put('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update');

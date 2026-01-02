@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache; // Import Cache
+use Illuminate\Support\Facades\Cache;
 
 class Configuration extends Model
 {
@@ -22,7 +22,24 @@ class Configuration extends Model
     }
 
     /**
-     * Hapus cache otomatis saat Admin mengupdate konfigurasi
+     * [BARU] Simpan atau Update konfigurasi ke Database
+     */
+    public static function set($key, $value)
+    {
+        // Menggunakan updateOrCreate agar jika key sudah ada di-update, jika belum ada dibuat baru
+        $config = self::updateOrCreate(
+            ['key' => $key],
+            ['value' => $value]
+        );
+
+        // Hapus cache agar data baru langsung terbaca
+        Cache::forget("config_{$key}");
+
+        return $config;
+    }
+
+    /**
+     * Hapus cache otomatis saat model di-save/delete manual
      */
     protected static function boot()
     {

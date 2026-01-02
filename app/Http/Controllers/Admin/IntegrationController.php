@@ -174,4 +174,58 @@ class IntegrationController extends Controller
             return back()->with('error', 'Error Sistem: ' . $e->getMessage());
         }
     }
+
+    // --- XENDIT INTEGRATION ---
+    public function xendit()
+    {
+        // Ambil konfigurasi dari database
+        $config = [
+            'xendit_callback_token' => \App\Models\Configuration::getBy('xendit_callback_token'),
+            'xendit_secret_key'     => \App\Models\Configuration::getBy('xendit_secret_key'),
+            'xendit_mode'           => \App\Models\Configuration::getBy('xendit_mode') ?? 'sandbox', // sandbox / production
+        ];
+        
+        return view('admin.integration.xendit', compact('config'));
+    }
+
+    public function updateXendit(Request $request)
+    {
+        $request->validate([
+            'xendit_mode' => 'required|in:sandbox,production',
+            'xendit_secret_key' => 'required|string',
+            'xendit_callback_token' => 'nullable|string',
+        ]);
+
+        \App\Models\Configuration::set('xendit_mode', $request->xendit_mode);
+        \App\Models\Configuration::set('xendit_secret_key', $request->xendit_secret_key);
+        \App\Models\Configuration::set('xendit_callback_token', $request->xendit_callback_token);
+
+        return back()->with('success', 'Konfigurasi Xendit berhasil disimpan!');
+    }
+
+    public function checkXendit()
+    {
+        $secretKey = \App\Models\Configuration::getBy('xendit_secret_key');
+        
+        if(!$secretKey) {
+            return back()->with('error', 'Secret Key belum diisi!');
+        }
+
+        try {
+            // Cek saldo / koneksi ke Xendit
+            $response = \Illuminate\Support\Facades\Http::withBasicAuth($secretKey, '')
+                ->get('https://api.xendit.co/balance');
+            
+            $data = $response->json();
+
+            if (isset($data['balance'])) {
+                return back()->with('success', 'Koneksi Berhasil! Saldo Xendit: Rp ' . number_format($data['balance']));
+            } else {
+                 return back()->with('error', 'Koneksi Gagal: ' . ($data['message'] ?? 'Unknown Error'));
+            }
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
 }

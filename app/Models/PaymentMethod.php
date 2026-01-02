@@ -14,6 +14,7 @@ class PaymentMethod extends Model
         'code',
         'name',
         'image',
+        'provider',
         'flat_fee',
         'percent_fee',
         'is_active',
