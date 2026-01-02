@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>@yield('title', 'Top Up Game') - {{ \App\Models\Configuration::getBy('app_name') ?? 'Store Game' }}</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -22,18 +22,20 @@
                 @endphp
 
                 @if($appLogo)
-                    <img src="{{ asset($appLogo) }}" alt="Logo" height="40" class="me-2 rounded">
-                    <span class="fw-bold">{{ $appName }}</span>
+                    <img src="{{ asset($appLogo) }}" alt="Logo" height="35" class="me-2 rounded">
+                    <span class="fw-bold fs-5">{{ $appName }}</span>
                 @else
                     <i class="bi bi-joystick fs-3 me-2 text-warning"></i> 
                     <span>{{ $appName }}</span>
                 @endif
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center fw-semibold text-uppercase small">
+
+            <div class="collapse navbar-collapse mt-3 mt-lg-0" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center fw-semibold text-uppercase small gap-2">
                     <li class="nav-item">
                         <a class="nav-link px-3 {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Beranda</a>
                     </li>
@@ -44,18 +46,18 @@
                         <a class="nav-link px-3 {{ request()->routeIs('order.*') ? 'active' : '' }}" href="{{ route('order.check') }}">Cek Pesanan</a>
                     </li>
                     
-                    <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
                         @auth
                             {{-- LOGIKA: Jika user SUDAH login --}}
                             @if(Auth::user()->role == 'admin')
-                                <a href="{{ route('admin.dashboard') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2">
-                                    <i class="bi bi-speedometer2 me-1"></i> Admin Panel
+                                <a href="{{ route('admin.dashboard') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2 w-100 w-lg-auto">
+                                    <i class="bi bi-speedometer2 me-1"></i> Panel
                                 </a>
                             @else
                                 {{-- MENU MEMBER (DROPDOWN) --}}
                                 <div class="dropdown">
-                                    <button class="btn btn-outline-warning rounded-pill px-4 py-2 dropdown-toggle text-uppercase" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->name }}
+                                    <button class="btn btn-outline-warning rounded-pill px-4 py-2 dropdown-toggle text-uppercase w-100 w-lg-auto" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-person-circle me-1"></i> {{ Str::limit(Auth::user()->name, 10) }}
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow border-secondary mt-2">
                                         <li>
@@ -82,7 +84,7 @@
                             @endif
                         @else
                             {{-- JIKA BELUM LOGIN --}}
-                            <a href="{{ route('login') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2">
+                            <a href="{{ route('login') }}" class="btn btn-gold-gradient rounded-pill px-4 py-2 w-100 w-lg-auto">
                                 <i class="bi bi-person-fill me-1"></i> Masuk
                             </a>
                         @endauth
@@ -92,7 +94,8 @@
         </div>
     </nav>
 
-    <main style="padding-top: 100px; min-height: 80vh;">
+    {{-- Main Content dengan Padding Responsive --}}
+    <main style="padding-top: 100px; min-height: 80vh;" class="main-responsive">
         @yield('content')
     </main>
 
@@ -116,7 +119,6 @@
                     
                     <h6 class="text-white fw-bold mb-2">Metode Pembayaran</h6>
                     <div class="d-flex gap-2 flex-wrap">
-                        {{-- LOOP GAMBAR PEMBAYARAN DARI DATABASE --}}
                         @for ($i = 1; $i <= 4; $i++)
                             @php $img = \App\Models\Configuration::getBy('payment_logo_'.$i); @endphp
                             
@@ -127,7 +129,6 @@
                             @endif
                         @endfor
 
-                        {{-- Default Placeholder jika belum ada --}}
                         @if(!\App\Models\Configuration::getBy('payment_logo_1'))
                              <span class="text-secondary small">Bank Transfer, E-Wallet, QRIS</span>
                         @endif
@@ -137,42 +138,30 @@
                 <div class="col-6 col-lg-2 mb-4">
                     <h5 class="text-white fw-bold mb-3">Peta Situs</h5>
                     <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><a href="{{ route('home') }}" class="text-secondary text-decoration-none hover-warning">Beranda</a></li>
+                        <li><a href="{{ route('pricelist') }}" class="text-secondary text-decoration-none hover-warning">Daftar Harga</a></li>
+                        <li><a href="{{ route('order.check') }}" class="text-secondary text-decoration-none hover-warning">Cek Pesanan</a></li>
                         <li><a href="{{ route('page.about') }}" class="text-secondary text-decoration-none hover-warning">Tentang Kami</a></li>
-                        <li><a href="{{ route('page.privacy') }}" class="text-secondary text-decoration-none hover-warning">Kebijakan Privasi</a></li>
-                        <li><a href="{{ route('page.terms') }}" class="text-secondary text-decoration-none hover-warning">Syarat & Ketentuan</a></li>
-                        <li><a href="{{ route('page.faq') }}" class="text-secondary text-decoration-none hover-warning">Pertanyaan Umum</a></li>
-                        <li><a href="https://wa.me/{{ \App\Models\Configuration::getBy('whatsapp_number') }}" class="text-secondary text-decoration-none hover-warning">Dukungan Pelanggan</a></li>
-                        <li><a href="{{ route('page.reseller') }}" class="text-secondary text-decoration-none hover-warning">Gabung Reseller</a></li>
                     </ul>
                 </div>
 
                 <div class="col-6 col-lg-2 mb-4">
-                    <h5 class="text-white fw-bold mb-3">Akses Cepat</h5>
+                    <h5 class="text-white fw-bold mb-3">Dukungan</h5>
                     <ul class="list-unstyled small d-flex flex-column gap-2">
-                        <li><a href="{{ route('page.leaderboard') }}" class="text-secondary text-decoration-none hover-warning">Papan Peringkat</a></li>
-                        <li><a href="{{ route('order.check') }}" class="text-secondary text-decoration-none hover-warning">Cek Transaksi</a></li>
-                        <li><a href="{{ route('pricelist') }}" class="text-secondary text-decoration-none hover-warning">Semua Layanan</a></li>
-                        <li><a href="{{ route('page.calculator') }}" class="text-secondary text-decoration-none hover-warning">Kalkulator WR</a></li>
-                        <li><a href="{{ route('page.region') }}" class="text-secondary text-decoration-none hover-warning">Cek Region ML</a></li>
+                        <li><a href="https://wa.me/{{ \App\Models\Configuration::getBy('whatsapp_number') }}" class="text-secondary text-decoration-none hover-warning">WhatsApp Admin</a></li>
+                        <li><a href="{{ route('page.terms') }}" class="text-secondary text-decoration-none hover-warning">Syarat & Ketentuan</a></li>
+                        <li><a href="{{ route('page.privacy') }}" class="text-secondary text-decoration-none hover-warning">Privasi</a></li>
+                        <li><a href="{{ route('page.faq') }}" class="text-secondary text-decoration-none hover-warning">FAQ</a></li>
                     </ul>
                 </div>
 
                 <div class="col-lg-3 mb-4">
-                    <h5 class="text-white fw-bold mb-3">Fitur</h5>
-                    <ul class="list-unstyled small d-flex flex-column gap-2 mb-4">
-                        <li><a href="{{ route('pricelist') }}" class="text-secondary text-decoration-none hover-warning">Daftar Harga</a></li>
-                        <li><a href="#" class="text-secondary text-decoration-none hover-warning">Mini Games (Soon)</a></li>
-                        @guest
-                            <li><a href="{{ route('login') }}" class="text-secondary text-decoration-none hover-warning">Login / Daftar</a></li>
-                        @endguest
-                    </ul>
-
                     <h5 class="text-white fw-bold mb-3">Ikuti Kami</h5>
                     <div class="d-flex gap-3">
                         <a href="#" class="text-secondary fs-4 hover-warning"><i class="bi bi-instagram"></i></a>
                         <a href="#" class="text-secondary fs-4 hover-warning"><i class="bi bi-whatsapp"></i></a>
-                        <a href="#" class="text-secondary fs-4 hover-warning"><i class="bi bi-envelope"></i></a>
                         <a href="#" class="text-secondary fs-4 hover-warning"><i class="bi bi-tiktok"></i></a>
+                        <a href="#" class="text-secondary fs-4 hover-warning"><i class="bi bi-youtube"></i></a>
                     </div>
                 </div>
 
@@ -191,9 +180,14 @@
         </div>
     </footer>
 
-    {{-- CSS Tambahan untuk Efek Hover --}}
+    {{-- CSS Tambahan untuk Responsif --}}
     <style>
         .hover-warning:hover { color: #ffc107 !important; transition: color 0.3s ease; }
+        
+        /* Penyesuaian Jarak Navbar di HP */
+        @media (max-width: 768px) {
+            .main-responsive { padding-top: 80px !important; }
+        }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -119,15 +119,15 @@
                                             <span class="text-muted small">-</span>
                                         @endif
                                     </td>
-                                    <td class="pe-4 text-end">
-                                        <form action="{{ route('admin.games.destroy', $game->id) }}" method="POST" onsubmit="return confirm('Hapus game ini? Semua produk di dalamnya juga akan terhapus!');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-outline-danger btn-sm rounded-circle" style="width: 32px; height: 32px;">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
+                                    <td class="text-center">
+                                <form action="{{ route('admin.games.destroy', $game->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-circle btn-sm" onclick="return confirm('Yakin ingin menghapus game ini?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                                 </tr>
                                 @empty
                                 <tr>

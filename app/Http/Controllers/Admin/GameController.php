@@ -18,6 +18,61 @@ class GameController extends Controller
         return view('admin.games.index', compact('games'));
     }
 
+    // Tampilkan Form Edit
+    public function edit($id)
+    {
+        $game = \App\Models\Game::findOrFail($id);
+        return view('admin.games.edit', compact('game'));
+    }
+
+    // Proses Simpan Perubahan
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:games,slug,' . $id,
+            'publisher' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active' => 'required|boolean',
+            'target_endpoint' => 'nullable|string', // Untuk custom endpoint API
+        ]);
+
+        $game = \App\Models\Game::findOrFail($id);
+        $data = $request->except(['thumbnail', 'banner']);
+
+        // Handle Upload Thumbnail
+        if ($request->hasFile('thumbnail')) {
+            // Hapus file lama jika ada
+            if ($game->thumbnail && file_exists(public_path($game->thumbnail))) {
+                unlink(public_path($game->thumbnail));
+            }
+            
+            $file = $request->file('thumbnail');
+            $filename = time() . '_thumb_' . $file->getClientOriginalName();
+            $file->move(public_path('images/games'), $filename);
+            $data['thumbnail'] = 'images/games/' . $filename;
+        }
+
+        // Handle Upload Banner
+        if ($request->hasFile('banner')) {
+            // Hapus file lama jika ada
+            if ($game->banner && file_exists(public_path($game->banner))) {
+                unlink(public_path($game->banner));
+            }
+
+            $file = $request->file('banner');
+            $filename = time() . '_banner_' . $file->getClientOriginalName();
+            $file->move(public_path('images/games'), $filename);
+            $data['banner'] = 'images/games/' . $filename;
+        }
+
+        $game->update($data);
+
+        return redirect()->route('admin.games.index')->with('success', 'Data game berhasil diperbarui!');
+    }
+
     public function store(Request $request)
     {
         // 1. VALIDASI KETAT (Security Patch)

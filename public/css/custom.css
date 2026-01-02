@@ -2,7 +2,7 @@
 
 :root {
     /* Palette Warna Premium */
-    --bg-main: #0f1119; /* Hitam lebih pekat */
+    --bg-main: #0f1119;
     --bg-secondary: #1a1c26;
     --bg-card: #242733;
     --text-primary: #ffffff;
@@ -13,7 +13,7 @@
     --gold-color: #ffc107;
 
     /* Glassmorphism Effect */
-    --glass-bg: rgba(36, 39, 51, 0.7);
+    --glass-bg: rgba(36, 39, 51, 0.95); /* Sedikit lebih gelap agar teks jelas */
     --glass-border: 1px solid rgba(255, 255, 255, 0.1);
     --blur-effect: blur(12px);
 }
@@ -22,6 +22,7 @@ body {
     background-color: var(--bg-main);
     color: var(--text-primary);
     font-family: 'Poppins', sans-serif;
+    overflow-x: hidden; /* Mencegah scroll samping di HP */
 }
 
 /* --- NAVBAR GLASS --- */
@@ -50,6 +51,7 @@ body {
     overflow: hidden;
     transition: all 0.4s ease;
     position: relative;
+    height: 100%; /* Agar tinggi kartu rata */
 }
 
 /* Efek Glow saat Hover */
@@ -58,7 +60,7 @@ body {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     border-radius: 16px;
-    padding: 2px; /* Ketebalan border gradient */
+    padding: 2px;
     background: var(--gold-gradient);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -68,7 +70,7 @@ body {
 }
 
 .card-game-premium:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
 }
 
@@ -76,8 +78,9 @@ body {
     opacity: 1;
 }
 
+/* Gambar Banner */
 .card-game-premium img.banner-img {
-    height: 180px;
+    height: 150px; /* Tinggi standar desktop */
     object-fit: cover;
     width: 100%;
     border-bottom: var(--glass-border);
@@ -90,14 +93,15 @@ body {
     transform: scale(1.05);
 }
 
+/* Logo Floating */
 .logo-floating {
     width: 50px;
     height: 50px;
     border-radius: 12px;
     border: 2px solid var(--gold-color);
     position: absolute;
-    top: 155px; /* Posisi menimpa banner dan body */
-    left: 20px;
+    top: 125px; /* Posisi relatif terhadap tinggi banner (150px - 25px) */
+    left: 15px;
     background: var(--bg-card);
     padding: 2px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -105,19 +109,22 @@ body {
 }
 
 .card-game-premium .card-body {
-    padding: 20px;
+    padding: 15px;
     padding-top: 35px; /* Memberi ruang untuk logo floating */
 }
 
 .game-title-premium {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1rem;
     margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Titik-titik jika judul kepanjangan */
 }
 
 .game-publisher-premium {
     color: var(--gold-color);
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
@@ -173,4 +180,57 @@ footer {
 .btn-gold-gradient:hover {
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
     transform: scale(1.05);
+}
+
+/* =========================================
+   MEDIA QUERIES (RESPONSIF MOBILE)
+   ========================================= */
+@media (max-width: 768px) {
+    /* Navbar */
+    .navbar-brand { font-size: 1.2rem; }
+    
+    /* Carousel Home (Banner Utama) */
+    .carousel-item img {
+        height: 180px !important; /* Banner lebih pendek di HP */
+    }
+    .carousel-caption {
+        display: block !important;
+        bottom: 10% !important;
+        left: 5% !important;
+    }
+    .carousel-caption h1 {
+        font-size: 1.5rem; /* Judul lebih kecil */
+        margin-bottom: 0;
+    }
+    .carousel-caption p {
+        font-size: 0.8rem;
+        margin-bottom: 0;
+    }
+
+    /* Kartu Game (Grid) */
+    .card-game-premium img.banner-img {
+        height: 100px; /* Banner game diperkecil */
+    }
+    .logo-floating {
+        width: 40px;
+        height: 40px;
+        top: 80px; /* Sesuaikan posisi logo (100px - 20px) */
+        left: 10px;
+    }
+    .card-game-premium .card-body {
+        padding: 10px;
+        padding-top: 30px;
+    }
+    .game-title-premium {
+        font-size: 0.9rem;
+    }
+    
+    /* Layout Umum */
+    main {
+        padding-top: 85px !important; /* Jarak navbar lebih kecil di HP */
+    }
+    .section-title-premium {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
 }

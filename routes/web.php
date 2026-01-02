@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // Import Models
 use App\Models\Game;
-use App\Models\Promo; // <--- Tambahkan ini di bawah use App\Models\Game;
+use App\Models\Promo;
 
 // Import Public/Member Controllers
 use App\Http\Controllers\TopupController;
@@ -37,11 +37,12 @@ use App\Http\Controllers\Admin\PaymentMethodController;
 // ==========================================
 
 Route::get('/', function () {
-    $games = Game::where('is_active', 1)->get(); // Hanya tampilkan game aktif
+    // Hanya tampilkan game yang aktif di halaman depan
+    $games = Game::where('is_active', 1)->get(); 
     return view('home', compact('games'));
 })->name('home');
 
-// [BARU] Route Halaman Pricelist
+// Route Halaman Pricelist
 Route::get('/pricelist', [PricelistController::class, 'index'])->name('pricelist');
 
 // ==========================================
@@ -71,7 +72,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // HALAMAN TOP UP & ORDER
 // ==========================================
 
-// [TAMBAHAN] Redirect /topup ke Home (Mencegah 404 jika slug kosong)
+// Redirect /topup ke Home (Mencegah 404 jika slug kosong)
 Route::get('/topup', function() {
     return redirect()->route('home');
 });
@@ -82,7 +83,7 @@ Route::get('/topup/{slug}', [TopupController::class, 'index'])->name('topup.inde
 // Batasi maksimal 10 request per 1 menit untuk order
 Route::middleware(['throttle:10,1'])->post('/topup/process', [TopupController::class, 'process'])->name('topup.process');
 
-// Batasi maksimal 30 request per 1 menit untuk cek ID (Mencegah spam API)
+// Batasi maksimal 30 request per 1 menit untuk cek ID (Mencegah spam API Apigames)
 Route::middleware(['throttle:30,1'])->post('/api/check-game-id', [TopupController::class, 'checkGameId'])->name('api.checkGameId');
 
 // Cek Pesanan / Invoice
@@ -115,8 +116,8 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     Route::resource('transactions', TransactionController::class, ['as' => 'admin'])->only(['index', 'update']);
     
     // --- MANAJEMEN GAME ---
-    Route::resource('games', GameController::class, ['as' => 'admin'])->except(['create', 'edit', 'show']);
-    // [BARU] Route Sync Game dari Digiflazz (GameController)
+    Route::resource('games', GameController::class, ['as' => 'admin'])->except(['create', 'show']);
+    // Route Sync Game dari Digiflazz
     Route::post('/games/sync-digiflazz', [GameController::class, 'syncDigiflazz'])->name('admin.games.sync');
 
     // --- MANAJEMEN PRODUK ---
@@ -125,28 +126,31 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     Route::get('/products/sync', [ProductController::class, 'syncView'])->name('admin.products.sync');
     Route::post('/products/sync', [ProductController::class, 'syncProcess'])->name('admin.products.sync.process');
     
-    // [BARU] Route Sync Produk Otomatis
+    // Route Sync Produk Otomatis & Cek Brand
     Route::post('/products/sync-all', [ProductController::class, 'syncAllProcess'])->name('admin.products.sync.all');
-    // [BARU] Route Ajax Cek Brand (Untuk Modal Popup)
     Route::get('/products/check-brands', [ProductController::class, 'getDigiflazzBrands'])->name('admin.products.brands');
 
     // --- INTEGRASI (API) ---
+    
+    // 1. Digiflazz (Stok)
     Route::get('/integration/digiflazz', [IntegrationController::class, 'digiflazz'])->name('admin.integration.digiflazz');
     Route::post('/integration/digiflazz', [IntegrationController::class, 'updateDigiflazz'])->name('admin.integration.digiflazz.update');
     Route::post('/integration/digiflazz/check', [IntegrationController::class, 'checkDigiflazz'])->name('admin.integration.digiflazz.check');
 
+    // 2. Tripay (Payment Gateway)
     Route::get('/integration/tripay', [IntegrationController::class, 'tripay'])->name('admin.integration.tripay');
     Route::post('/integration/tripay', [IntegrationController::class, 'updateTripay'])->name('admin.integration.tripay.update');
     Route::post('/integration/tripay/check', [IntegrationController::class, 'checkTripay'])->name('admin.integration.tripay.check');
 
-    // PAGE
-    Route::get('/integration/payment', [App\Http\Controllers\Admin\PaymentMethodController::class, 'index'])->name('admin.integration.payment');
-    
-    // UPDATE MANUAL
-    Route::put('/integration/payment/{id}', [App\Http\Controllers\Admin\PaymentMethodController::class, 'update'])->name('admin.integration.payment.update');
+    // 3. Apigames (Cek ID Game)
+    Route::get('/integration/apigames', [IntegrationController::class, 'apigames'])->name('admin.integration.apigames');
+    Route::post('/integration/apigames', [IntegrationController::class, 'updateApigames'])->name('admin.integration.apigames.update');
+    Route::post('/integration/apigames/check', [IntegrationController::class, 'checkApigames'])->name('admin.integration.apigames.check');
 
-    // SYNC OTOMATIS (BARU)
-    Route::post('/integration/payment/sync', [App\Http\Controllers\Admin\PaymentMethodController::class, 'syncTripay'])->name('admin.integration.payment.sync');
+    // 4. Metode Pembayaran (Manual & Channel)
+    Route::get('/integration/payment', [PaymentMethodController::class, 'index'])->name('admin.integration.payment');
+    Route::put('/integration/payment/{id}', [PaymentMethodController::class, 'update'])->name('admin.integration.payment.update');
+    Route::post('/integration/payment/sync', [PaymentMethodController::class, 'syncTripay'])->name('admin.integration.payment.sync');
    
     // --- CONFIG WEB (Logo, Nama, Footer) ---
     Route::get('/config/web', [ServerController::class, 'webView'])->name('admin.config.web');

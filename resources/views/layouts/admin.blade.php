@@ -18,7 +18,7 @@
             top: 0; left: 0;
             color: #a0aaec;
             overflow-y: auto;
-            z-index: 1000;
+            z-index: 1050; /* Z-index tinggi agar di atas konten */
             transition: all 0.3s;
         }
         
@@ -86,13 +86,29 @@
 
         /* Responsif untuk Mobile */
         @media (max-width: 768px) {
-            .sidebar { margin-left: -260px; }
+            .sidebar { 
+                margin-left: -260px; 
+                box-shadow: 5px 0 15px rgba(0,0,0,0.3); /* Bayangan saat muncul */
+            }
             .sidebar.show { margin-left: 0; }
             .main-content { margin-left: 0; }
+            
+            /* Overlay Effect (Opsional: Membuat background gelap saat menu buka) */
+            .sidebar-open-overlay {
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1040;
+                display: none;
+            }
+            .sidebar-open-overlay.show { display: block; }
         }
     </style>
 </head>
 <body>
+
+    {{-- Overlay Gelap untuk Mobile --}}
+    <div id="mobileOverlay" class="sidebar-open-overlay" onclick="toggleSidebar()"></div>
 
     <div class="sidebar d-flex flex-column" id="sidebarMenu">
         <a href="#" class="sidebar-brand text-decoration-none d-flex align-items-center justify-content-center">
@@ -135,13 +151,16 @@
                                 <i class="bi bi-box-seam"></i> Digiflazz (Stok)
                             </a>
                         </li>
-                        
+                        <li class="nav-item">
+                            <a href="{{ route('admin.integration.apigames') }}" class="nav-link {{ request()->routeIs('admin.integration.apigames') ? 'active' : '' }}">
+                                <i class="bi bi-person-check-fill"></i> Apigames (Cek ID)
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="{{ route('admin.integration.tripay') }}" class="nav-link {{ request()->routeIs('admin.integration.tripay') ? 'active' : '' }}">
                                 <i class="bi bi-credit-card"></i> Tripay (API)
                             </a>
                         </li>
-
                         <li class="nav-item">
                             <a href="{{ route('admin.integration.payment') }}" class="nav-link {{ request()->routeIs('admin.integration.payment*') ? 'active' : '' }}">
                                 <i class="bi bi-wallet2"></i> Metode Pembayaran
@@ -205,7 +224,8 @@
     <div class="main-content">
         <nav class="navbar navbar-light bg-white shadow-sm mb-4 rounded px-4 py-3 d-flex justify-content-between align-items-center">
             
-            <button class="btn btn-outline-secondary d-md-none" type="button" onclick="document.getElementById('sidebarMenu').classList.toggle('show')">
+            {{-- Tombol Toggle dengan ID --}}
+            <button class="btn btn-outline-secondary d-md-none" type="button" id="sidebarToggle" onclick="toggleSidebar()">
                 <i class="bi bi-list"></i>
             </button>
 
@@ -226,5 +246,28 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {{-- SCRIPT TOGGLE & CLOSE ON CLICK OUTSIDE --}}
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebarMenu').classList.toggle('show');
+            document.getElementById('mobileOverlay').classList.toggle('show');
+        }
+
+        // Logic menutup sidebar jika layar diklik (opsi tambahan jika overlay tidak cukup)
+        document.addEventListener('click', function(event) {
+            var sidebar = document.getElementById('sidebarMenu');
+            var toggleBtn = document.getElementById('sidebarToggle');
+            var overlay = document.getElementById('mobileOverlay');
+
+            // Jika klik terjadi BUKAN di sidebar, BUKAN di tombol, dan sidebar sedang terbuka
+            if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target) && sidebar.classList.contains('show')) {
+                // Jangan tutup jika yang diklik adalah overlay (karena overlay punya onclick sendiri)
+                if (event.target !== overlay) {
+                    toggleSidebar();
+                }
+            }
+        });
+    </script>
 </body>
 </html>

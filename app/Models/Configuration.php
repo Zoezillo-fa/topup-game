@@ -3,18 +3,37 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache; // Import Cache
 
 class Configuration extends Model
 {
     protected $fillable = ['key', 'value'];
 
-    // Cara ambil: Configuration::getBy('tripay_api_key')
-    public static function getBy($key) {
-        return self::where('key', $key)->value('value');
+    /**
+     * Ambil config dari Cache. Jika tidak ada, ambil dari DB lalu simpan ke Cache.
+     */
+    public static function getBy($key, $default = null)
+    {
+        // Cache selama 24 jam (1440 menit)
+        return Cache::remember("config_{$key}", 60 * 24, function () use ($key, $default) {
+            $config = self::where('key', $key)->first();
+            return $config ? $config->value : $default;
+        });
     }
 
-    // Cara simpan: Configuration::set('tripay_api_key', '12345')
-    public static function set($key, $value) {
-        return self::updateOrCreate(['key' => $key], ['value' => $value]);
+    /**
+     * Hapus cache otomatis saat Admin mengupdate konfigurasi
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            Cache::forget("config_{$model->key}");
+        });
+
+        static::deleted(function ($model) {
+            Cache::forget("config_{$model->key}");
+        });
     }
 }
