@@ -19,8 +19,6 @@ class CallbackController extends Controller
     {
         $callbackSignature = $request->server('HTTP_X_CALLBACK_SIGNATURE');
         $json = $request->getContent();
-        
-        // Ambil Private Key dari Database
         $privateKey = Configuration::getBy('tripay_private_key');
 
         $signature = hash_hmac('sha256', $json, $privateKey);
@@ -33,28 +31,44 @@ class CallbackController extends Controller
         $event = $request->server('HTTP_X_CALLBACK_EVENT');
 
         if ($event == 'payment_status') {
-            if ($data->status == 'PAID') {
-                // Tripay 'merchant_ref' adalah Nomor Invoice kita
-                $trx = Transaction::where('reference', $data->merchant_ref)->first();
+            // Cari transaksi berdasarkan Reference
+            $trx = Transaction::where('reference', $data->merchant_ref)->first();
 
-                if ($trx && $trx->status == 'UNPAID') {
-                    // 1. Update Status Transaksi jadi PAID
-                    $trx->update(['status' => 'PAID']);
-                    
-                    // 2. Cek Jenis Layanan (Deposit atau Beli Game?)
-                    if ($trx->service == 'DEPOSIT') {
-                        // === LOGIKA DEPOSIT ===
-                        $user = $trx->user;
-                        if ($user) {
-                            $user->balance += $trx->amount; // Tambah saldo user
-                            $user->save();
-                            Log::info("Tripay Deposit Success: {$trx->invoice} - User: {$user->name} (+{$trx->amount})");
+            if ($trx) {
+                // A. JIKA SUKSES
+                if ($data->status == 'PAID') {
+                    if ($trx->status == 'UNPAID') {
+                        
+                        // Cek apakah ini DEPOSIT atau PEMBELIAN GAME
+                        if ($trx->service == 'DEPOSIT') {
+                            // 1. Update Status Transaksi & Processing Status (Supaya dashboard tidak loading)
+                            $trx->update([
+                                'status' => 'PAID',
+                                'processing_status' => 'SUCCESS', 
+                                'sn' => 'DEP/' . time() // Serial Number Dummy
+                            ]);
+
+                            // 2. Tambah Saldo User
+                            $user = $trx->user;
+                            if ($user) {
+                                $user->balance += $trx->amount;
+                                $user->save();
+                                Log::info("Tripay Deposit Success: {$trx->reference} - User: {$user->name} (+{$trx->amount})");
+                            }
+                        } else {
+                            // Jika Pembelian Game -> Update PAID, biarkan Digiflazz urus processingnya
+                            $trx->update(['status' => 'PAID']);
+                            $digiflazz->processTransaction($trx);
                         }
-                    } else {
-                        // === LOGIKA GAME (DIGIFLAZZ) ===
-                        // Proses Kirim Game Item ke Digiflazz
-                        $digiflazz->processTransaction($trx);
                     }
+                } 
+                // B. JIKA GAGAL / EXPIRED / REFUND
+                elseif (in_array($data->status, ['EXPIRED', 'FAILED', 'REFUND'])) {
+                    $trx->update([
+                        'status' => strtoupper($data->status),
+                        'processing_status' => 'FAILED' // Supaya dashboard jelas gagal
+                    ]);
+                    Log::info("Tripay Transaction {$data->status}: {$trx->reference}");
                 }
             }
         }
@@ -67,46 +81,54 @@ class CallbackController extends Controller
     // ==========================================
     public function handleXendit(Request $request, DigiflazzService $digiflazz)
     {
-        // A. Validasi Token (Keamanan)
         $xenditTokenHeader = $request->header('x-callback-token');
         $myToken = Configuration::getBy('xendit_callback_token');
 
-        // Jika token diisi di admin, validasi tokennya
         if ($myToken && $xenditTokenHeader !== $myToken) {
             return Response::json(['message' => 'Invalid Token'], 403);
         }
 
-        // B. Ambil Data
         $data = $request->all();
-
-        // C. Cek Status Pembayaran
-        // Xendit mengirim status 'PAID' (untuk Invoice/QRIS) atau 'SETTLED'
         $status = $data['status'] ?? null;
-        $externalId = $data['external_id'] ?? null; // Invoice Number (DEP-XXX atau TRX-XXX)
+        $externalId = $data['external_id'] ?? null;
 
-        if ($status == 'PAID' || $status == 'SETTLED') {
-            $trx = Transaction::where('reference', $externalId)->first();
+        // Cari transaksi
+        $trx = Transaction::where('reference', $externalId)->first();
 
-            if ($trx && $trx->status == 'UNPAID') {
-                // 1. Update Status Transaksi jadi PAID
-                $trx->update(['status' => 'PAID']);
-                
-                // 2. Cek Jenis Layanan
-                if ($trx->service == 'DEPOSIT') {
-                    // === LOGIKA DEPOSIT ===
-                    $user = $trx->user;
-                    if ($user) {
-                        $user->balance += $trx->amount; // Tambah saldo user
-                        $user->save();
-                        Log::info("Xendit Deposit Success: {$trx->invoice} - User: {$user->name} (+{$trx->amount})");
+        if ($trx) {
+            // A. JIKA SUKSES
+            if ($status == 'PAID' || $status == 'SETTLED') {
+                if ($trx->status == 'UNPAID') {
+                    
+                    if ($trx->service == 'DEPOSIT') {
+                        // 1. Update Status & Processing (Fix Dashboard Loading)
+                        $trx->update([
+                            'status' => 'PAID',
+                            'processing_status' => 'SUCCESS',
+                            'sn' => 'DEP/' . time()
+                        ]);
+
+                        // 2. Tambah Saldo User
+                        $user = $trx->user;
+                        if ($user) {
+                            $user->balance += $trx->amount;
+                            $user->save();
+                            Log::info("Xendit Deposit Success: {$trx->reference} - User: {$user->name} (+{$trx->amount})");
+                        }
+                    } else {
+                        // Jika Pembelian Game
+                        $trx->update(['status' => 'PAID']);
+                        $digiflazz->processTransaction($trx);
                     }
-                } else {
-                    // === LOGIKA GAME (DIGIFLAZZ) ===
-                    // Proses Kirim Game Item ke Digiflazz
-                    $digiflazz->processTransaction($trx);
                 }
-                
-                Log::info("Xendit Payment Processed: " . $externalId);
+            }
+            // B. JIKA GAGAL / EXPIRED
+            elseif ($status == 'EXPIRED') {
+                $trx->update([
+                    'status' => 'EXPIRED',
+                    'processing_status' => 'FAILED'
+                ]);
+                Log::info("Xendit Transaction Expired: {$trx->reference}");
             }
         }
 

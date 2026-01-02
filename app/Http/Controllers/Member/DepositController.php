@@ -32,21 +32,26 @@ class DepositController extends Controller
         $invoiceId = 'DEP-' . strtoupper(Str::random(10));
 
         // 1. Simpan Transaksi ke Database
-        // Pastikan tabel transactions Anda punya kolom yang fleksibel
-        // Kita isi 'service' dengan 'DEPOSIT' agar callback tahu ini bukan pembelian game
-        // 1. Simpan Transaksi ke Database
-    $trx = Transaction::create([
-        'user_id'          => $user->id,
-        'reference'        => $invoiceId, // <--- TAMBAHKAN INI (Samakan dengan Invoice)
-        'service'          => 'DEPOSIT', 
-        'service_name'     => 'Isi Saldo Akun',
-        'target'           => $user->phone ?? '-',
-        'amount'           => $amount,
-        'price'            => $amount,
-        'status'           => 'UNPAID',
-        'payment_method'   => 'QRIS',
-        'payment_provider' => 'xendit'
-    ]);
+        $trx = Transaction::create([
+            'user_id'          => $user->id,
+            'reference'        => $invoiceId,
+            'service'          => 'DEPOSIT', 
+            'service_name'     => 'Isi Saldo Akun',
+            'target'           => $user->phone ?? '-',
+            
+            // [PENTING] Isi ini agar Nama User muncul di Dashboard Admin
+            'nickname_game'    => $user->name, 
+            
+            'amount'           => $amount,
+            'price'            => $amount,
+            'status'           => 'UNPAID',
+            
+            // [PENTING] Set status awal pending
+            'processing_status'=> 'PENDING', 
+            
+            'payment_method'   => 'QRIS',
+            'payment_provider' => 'xendit'
+        ]);
 
         // 2. Request ke API Xendit (Buat Invoice)
         $secretKey = Configuration::getBy('xendit_secret_key');
