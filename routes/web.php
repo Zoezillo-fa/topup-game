@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\PromoController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -195,6 +196,9 @@ Route::middleware(['auth'])->group(function() {
     // FITUR DEPOSIT / ISI SALDO
     Route::get('/member/deposit', [\App\Http\Controllers\Member\DepositController::class, 'index'])->name('deposit.index');
     Route::post('/member/deposit', [\App\Http\Controllers\Member\DepositController::class, 'store'])->name('deposit.store');
+
+    // [BARU] FITUR RIWAYAT TRANSAKSI
+    Route::get('/member/transactions', [\App\Http\Controllers\Member\TransactionController::class, 'index'])->name('member.transactions');
     
     // Proses Update
     Route::put('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update');

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 31 Des 2025 pada 17.27
+-- Waktu pembuatan: 02 Jan 2026 pada 21.23
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -32,6 +32,35 @@ CREATE TABLE `cache` (
   `value` mediumtext NOT NULL,
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data untuk tabel `cache`
+--
+
+INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
+('laravel-cache-config_apigames_merchant', 's:17:\"M220704FEUE9178NP\";', 1767377165),
+('laravel-cache-config_apigames_secret', 's:64:\"bd6fbd73d36bfdb7aa818288c604fe5543f977f8ace024bdeccfbfec9185d7d6\";', 1767377165),
+('laravel-cache-config_app_logo', 'N;', 1767383439),
+('laravel-cache-config_app_name', 's:11:\"Zoestore Id\";', 1767382546),
+('laravel-cache-config_digiflazz_key', 's:36:\"ea5dc837-f75c-565f-b663-c272a9433cb4\";', 1767377166),
+('laravel-cache-config_digiflazz_mode', 's:10:\"production\";', 1767377166),
+('laravel-cache-config_digiflazz_username', 's:12:\"zeyumoD22vqD\";', 1767377166),
+('laravel-cache-config_footer_description', 's:42:\"Website Topup Game Tercepat Dan Terpercaya\";', 1767382546),
+('laravel-cache-config_gateway_tripay_active', 's:1:\"1\";', 1767380747),
+('laravel-cache-config_gateway_xendit_active', 's:1:\"1\";', 1767380747),
+('laravel-cache-config_is_maintenance', 'N;', 1767384544),
+('laravel-cache-config_payment_logo_1', 's:69:\"/storage/images/settings/MAZ6RMibykIf1xSdU5tf3PzDMwDI7M2sFdOWtMv3.jpg\";', 1767382546),
+('laravel-cache-config_payment_logo_2', 's:69:\"/storage/images/settings/A4WOOewXOuw5Oz4DlFsx9f4zkxYI2pV7U6MjkJKA.jpg\";', 1767382546),
+('laravel-cache-config_payment_logo_3', 's:69:\"/storage/images/settings/KrLtL0qaHJcYnaTtJaBRZxSiBE66b4lYGhkXoILc.jpg\";', 1767382546),
+('laravel-cache-config_payment_logo_4', 's:69:\"/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg\";', 1767382546),
+('laravel-cache-config_tripay_api_key', 's:44:\"DEV-TN3p8mNH8ol7RGBAyQxktQ406lHU7NjG2ezimLEW\";', 1767380749),
+('laravel-cache-config_tripay_merchant_code', 's:6:\"T13867\";', 1767378621),
+('laravel-cache-config_tripay_mode', 's:7:\"sandbox\";', 1767380749),
+('laravel-cache-config_tripay_private_key', 's:29:\"Ij23U-wKJTj-KrQ0v-WqU92-E4Dwr\";', 1767378621),
+('laravel-cache-config_whatsapp_number', 's:12:\"087894692316\";', 1767382546),
+('laravel-cache-config_xendit_callback_token', 's:48:\"z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p\";', 1767377822),
+('laravel-cache-config_xendit_mode', 's:10:\"production\";', 1767377822),
+('laravel-cache-config_xendit_secret_key', 's:78:\"xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy\";', 1767382745);
 
 -- --------------------------------------------------------
 
@@ -82,7 +111,14 @@ INSERT INTO `configurations` (`id`, `key`, `value`, `created_at`, `updated_at`) 
 (16, 'payment_logo_1', '/storage/images/settings/MAZ6RMibykIf1xSdU5tf3PzDMwDI7M2sFdOWtMv3.jpg', '2025-12-31 06:13:30', '2025-12-31 06:13:30'),
 (17, 'payment_logo_2', '/storage/images/settings/A4WOOewXOuw5Oz4DlFsx9f4zkxYI2pV7U6MjkJKA.jpg', '2025-12-31 06:30:48', '2025-12-31 06:30:48'),
 (18, 'payment_logo_3', '/storage/images/settings/KrLtL0qaHJcYnaTtJaBRZxSiBE66b4lYGhkXoILc.jpg', '2025-12-31 06:30:48', '2025-12-31 06:30:48'),
-(19, 'payment_logo_4', '/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg', '2025-12-31 06:30:48', '2025-12-31 06:30:48');
+(19, 'payment_logo_4', '/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg', '2025-12-31 06:30:48', '2025-12-31 06:30:48'),
+(20, 'apigames_merchant', 'M220704FEUE9178NP', '2025-12-31 13:04:11', '2025-12-31 13:04:11'),
+(21, 'apigames_secret', 'bd6fbd73d36bfdb7aa818288c604fe5543f977f8ace024bdeccfbfec9185d7d6', '2025-12-31 13:04:11', '2025-12-31 13:07:20'),
+(22, 'xendit_mode', 'production', '2026-01-02 10:53:01', '2026-01-02 10:53:01'),
+(23, 'xendit_secret_key', 'xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy', '2026-01-02 10:53:01', '2026-01-02 10:53:01'),
+(24, 'xendit_callback_token', 'z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p', '2026-01-02 10:53:01', '2026-01-02 10:53:01'),
+(25, 'gateway_tripay_active', '1', '2026-01-02 11:19:48', '2026-01-02 11:41:47'),
+(26, 'gateway_xendit_active', '1', '2026-01-02 11:19:48', '2026-01-02 11:41:42');
 
 -- --------------------------------------------------------
 
@@ -210,7 +246,12 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (63, '2025_12_31_102032_add_vip_price_to_products_table', 2),
 (64, '2025_12_31_110106_add_brand_digiflazz_to_games_table', 3),
 (65, '2025_12_31_113019_fix_games_table_structure', 4),
-(66, '2025_12_31_113311_fix_games_table_structure', 5);
+(66, '2025_12_31_113311_fix_games_table_structure', 5),
+(67, '2026_01_02_164918_add_balance_to_users_table', 6),
+(68, '2026_01_02_172448_add_provider_to_payment_methods', 7),
+(69, '2026_01_02_185626_add_user_id_to_transactions_table', 8),
+(70, '2026_01_02_190959_add_service_columns_to_transactions_table', 9),
+(71, '2026_01_02_191437_fix_transactions_table_structure', 10);
 
 -- --------------------------------------------------------
 
@@ -233,6 +274,7 @@ CREATE TABLE `password_reset_tokens` (
 CREATE TABLE `payment_methods` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `code` varchar(255) NOT NULL,
+  `provider` varchar(255) NOT NULL DEFAULT 'tripay',
   `name` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
   `image` varchar(255) DEFAULT NULL,
@@ -249,29 +291,29 @@ CREATE TABLE `payment_methods` (
 -- Dumping data untuk tabel `payment_methods`
 --
 
-INSERT INTO `payment_methods` (`id`, `code`, `name`, `type`, `image`, `flat_fee`, `percent_fee`, `admin_fee_flat`, `admin_fee_percent`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'QRIS', 'QRIS by ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/BpE4BPVyIw1605597490.png', 750.00, 0.70, 750.00, 0.70, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(2, 'OVO', 'OVO', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/fH6Y7wDT171586199243.png', 0.00, 3.00, 0.00, 3.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(3, 'DANA', 'DANA', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/sj3UHLu8Tu1655719621.png', 0.00, 3.00, 0.00, 3.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(4, 'SHOPEEPAY', 'ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/d204uajhlS1655719774.png', 0.00, 3.00, 0.00, 3.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(5, 'MYBVA', 'Maybank VA', 'virtual_account', 'https://tripay.co.id/images/payment-channel/maybankva.png', 0.00, 0.00, 4250.00, 0.00, 1, '2025-12-31 01:12:33', '2025-12-31 01:12:33'),
-(6, 'PERMATAVA', 'Permata Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/szezRhAALB1583408731.png', 4250.00, 0.00, 4250.00, 0.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(7, 'BRIVA', 'BRI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/8WQ3APST5s1579461828.png', 4250.00, 0.00, 4250.00, 0.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(8, 'BNIVA', 'BNI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/n22Qsh8jMa1583433577.png', 4250.00, 0.00, 4250.00, 0.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(9, 'MANDIRIVA', 'Mandiri Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/T9Z012UE331583531536.png', 4250.00, 0.00, 4250.00, 0.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(10, 'BCAVA', 'BCA Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/ytBKvaleGy1605201833.png', 5500.00, 0.00, 5500.00, 0.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(11, 'ALFAMART', 'Alfamart', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/jiGZMKp2RD1583433506.png', 3500.00, 0.00, 6000.00, 0.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(12, 'INDOMARET', 'Indomaret', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/zNzuO5AuLw1583513974.png', 3500.00, 0.00, 3500.00, 0.00, 1, '2025-12-31 01:12:33', '2025-12-31 06:49:58'),
-(13, 'MUAMALATVA', 'Muamalat Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/GGwwcgdYaG1611929720.png', 4250.00, 0.00, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(14, 'CIMBVA', 'CIMB Niaga Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/WtEJwfuphn1614003973.png', 4250.00, 0.00, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(15, 'BSIVA', 'BSI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/tEclz5Assb1643375216.png', 4250.00, 0.00, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(16, 'OCBCVA', 'OCBC NISP Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/ysiSToLvKl1644244798.png', 4250.00, 0.00, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(17, 'DANAMONVA', 'Danamon Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/F3pGzDOLUz1644245546.png', 4250.00, 0.00, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(18, 'OTHERBANKVA', 'Other Bank Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/qQYo61sIDa1702995837.png', 4250.00, 0.00, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(19, 'ALFAMIDI', 'Alfamidi', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/aQTdaUC2GO1593660384.png', 3500.00, 0.00, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(20, 'QRISC', 'QRIS (Customizable)', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/m9FtFwaBCg1623157494.png', 750.00, 0.70, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(21, 'QRIS2', 'QRIS', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/8ewGzP6SWe1649667701.png', 750.00, 0.70, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58'),
-(22, 'QRIS_SHOPEEPAY', 'QRIS Custom by ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/DM8sBd1i9y1681718593.png', 750.00, 0.70, 0.00, 0.00, 1, '2025-12-31 06:49:58', '2025-12-31 06:49:58');
+INSERT INTO `payment_methods` (`id`, `code`, `provider`, `name`, `type`, `image`, `flat_fee`, `percent_fee`, `admin_fee_flat`, `admin_fee_percent`, `is_active`, `created_at`, `updated_at`) VALUES
+(51, 'QRIS', 'tripay', 'QRIS by ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/BpE4BPVyIw1605597490.png', 750.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:31:36', '2026-01-02 11:43:13'),
+(54, 'PERMATAVA', 'tripay', 'Permata Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/szezRhAALB1583408731.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(55, 'BNIVA', 'tripay', 'BNI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/n22Qsh8jMa1583433577.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(56, 'BRIVA', 'tripay', 'BRI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/8WQ3APST5s1579461828.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(57, 'MANDIRIVA', 'tripay', 'Mandiri Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/T9Z012UE331583531536.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(58, 'BCAVA', 'tripay', 'BCA Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/ytBKvaleGy1605201833.png', 5500.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(59, 'MUAMALATVA', 'tripay', 'Muamalat Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/GGwwcgdYaG1611929720.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(60, 'CIMBVA', 'tripay', 'CIMB Niaga Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/WtEJwfuphn1614003973.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(61, 'BSIVA', 'tripay', 'BSI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/tEclz5Assb1643375216.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(62, 'OCBCVA', 'tripay', 'OCBC NISP Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/ysiSToLvKl1644244798.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(63, 'DANAMONVA', 'tripay', 'Danamon Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/F3pGzDOLUz1644245546.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(64, 'OTHERBANKVA', 'tripay', 'Other Bank Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/qQYo61sIDa1702995837.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(65, 'ALFAMART', 'tripay', 'Alfamart', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/jiGZMKp2RD1583433506.png', 3500.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(66, 'INDOMARET', 'tripay', 'Indomaret', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/zNzuO5AuLw1583513974.png', 3500.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(67, 'ALFAMIDI', 'tripay', 'Alfamidi', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/aQTdaUC2GO1593660384.png', 3500.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(68, 'OVO', 'tripay', 'OVO', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/fH6Y7wDT171586199243.png', 0.00, 3.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(69, 'QRISC', 'tripay', 'QRIS (Customizable)', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/m9FtFwaBCg1623157494.png', 750.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(70, 'QRIS2', 'tripay', 'QRIS', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/8ewGzP6SWe1649667701.png', 750.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(71, 'DANA', 'tripay', 'DANA', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/sj3UHLu8Tu1655719621.png', 0.00, 3.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(72, 'SHOPEEPAY', 'tripay', 'ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/d204uajhlS1655719774.png', 0.00, 3.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(73, 'QRIS_SHOPEEPAY', 'tripay', 'QRIS Custom by ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/DM8sBd1i9y1681718593.png', 750.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
+(75, 'QRIS_XENDIT', 'xendit', 'QRIS Xendit (Isi Saldo)', 'e_wallet', NULL, 0.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:43:13', '2026-01-02 11:43:13');
 
 -- --------------------------------------------------------
 
@@ -460,7 +502,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('Ne35I5XUtXgMTnnoxQG9tbAeiW7UAszP9eYPE2QK', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMWhyd2NoVU9wR2huSFRCUEdPZ1B0T29jYnJEbnR1bzNIYllpNmt6UiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90b3B1cC9tb2JpbGUtbGVnZW5kcyI7czo1OiJyb3V0ZSI7czoxMToidG9wdXAuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1767196879);
+('l8WfciVnJDMRWHr3GXHd9Vik8G6kZUbXANRL5FzO', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTG5nS2hUQmlzRGhseW56cTZzWHFQc09uY1NlejY3N3RNeXdzWGc2VSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi90cmFuc2FjdGlvbnMiO3M6NToicm91dGUiO3M6MjQ6ImFkbWluLnRyYW5zYWN0aW9ucy5pbmRleCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1767383104);
 
 -- --------------------------------------------------------
 
@@ -470,17 +512,34 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 
 CREATE TABLE `transactions` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
   `reference` varchar(255) NOT NULL,
-  `user_id_game` varchar(255) NOT NULL,
+  `user_id_game` varchar(255) DEFAULT NULL,
   `nickname_game` varchar(255) DEFAULT NULL,
-  `product_code` varchar(255) NOT NULL,
+  `product_code` varchar(255) DEFAULT NULL,
   `amount` decimal(15,2) NOT NULL,
+  `price` bigint(20) NOT NULL DEFAULT 0,
+  `target` varchar(255) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
+  `payment_provider` varchar(50) DEFAULT NULL,
   `status` varchar(255) NOT NULL DEFAULT 'UNPAID',
+  `sn` varchar(255) DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `service` varchar(50) DEFAULT NULL,
+  `service_name` varchar(255) DEFAULT NULL,
   `tripay_reference` varchar(255) DEFAULT NULL,
   `processing_status` varchar(255) NOT NULL DEFAULT 'PENDING',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data untuk tabel `transactions`
+--
+
+INSERT INTO `transactions` (`id`, `user_id`, `reference`, `user_id_game`, `nickname_game`, `product_code`, `amount`, `price`, `target`, `payment_method`, `payment_provider`, `status`, `sn`, `note`, `service`, `service_name`, `tripay_reference`, `processing_status`, `created_at`, `updated_at`) VALUES
+(2, 4, 'DEP-CDBSRNUCWM', NULL, NULL, NULL, 10000.00, 10000, '-', 'QRIS', 'xendit', 'PAID', NULL, NULL, 'DEPOSIT', 'Isi Saldo Akun', NULL, 'PENDING', '2026-01-02 12:24:55', '2026-01-02 12:25:36'),
+(3, 4, 'DEP-64ZBW0YOXO', NULL, NULL, NULL, 25000.00, 25000, '-', 'QRIS', 'xendit', 'UNPAID', NULL, NULL, 'DEPOSIT', 'Isi Saldo Akun', NULL, 'PENDING', '2026-01-02 12:26:05', '2026-01-02 12:26:05');
 
 -- --------------------------------------------------------
 
@@ -492,6 +551,7 @@ CREATE TABLE `users` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
+  `balance` bigint(20) NOT NULL DEFAULT 0,
   `role` varchar(255) NOT NULL DEFAULT 'member',
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) NOT NULL,
@@ -504,10 +564,10 @@ CREATE TABLE `users` (
 -- Dumping data untuk tabel `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `role`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Administrator', 'admin@topup.com', 'admin', NULL, '$2y$12$bZp5cjTnwp5QBzxd9QjDV.LXJak8V.yZyifQZVfdYSys2YSY9Pt0O', NULL, '2025-12-31 01:12:32', '2025-12-31 01:12:32'),
-(2, 'Member Test', 'member@gmail.com', 'member', NULL, '$2y$12$Fj4PPLa1iGnH2LD1j.CGKudRYtpjg8BGJ9AuvOvLnX.q5qWORAlde', NULL, '2025-12-31 01:12:32', '2025-12-31 01:12:32'),
-(4, 'faat', 'zoezillo05@gmail.com', 'member', NULL, '$2y$12$M8dkHwlaJMyvsac6IkXD7uR78Ag6SsfwzeIMzRhKDQ39nFmqckzE2', NULL, '2025-12-31 01:47:33', '2025-12-31 01:50:32');
+INSERT INTO `users` (`id`, `name`, `email`, `balance`, `role`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
+(1, 'Administrator', 'admin@topup.com', 0, 'admin', NULL, '$2y$12$bZp5cjTnwp5QBzxd9QjDV.LXJak8V.yZyifQZVfdYSys2YSY9Pt0O', NULL, '2025-12-31 01:12:32', '2025-12-31 01:12:32'),
+(2, 'Member Test', 'member@gmail.com', 0, 'member', NULL, '$2y$12$Fj4PPLa1iGnH2LD1j.CGKudRYtpjg8BGJ9AuvOvLnX.q5qWORAlde', NULL, '2025-12-31 01:12:32', '2025-12-31 01:12:32'),
+(4, 'faat', 'zoezillo05@gmail.com', 5000, 'member', NULL, '$2y$12$M8dkHwlaJMyvsac6IkXD7uR78Ag6SsfwzeIMzRhKDQ39nFmqckzE2', NULL, '2025-12-31 01:47:33', '2026-01-02 10:00:18');
 
 --
 -- Indexes for dumped tables
@@ -631,7 +691,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT untuk tabel `configurations`
 --
 ALTER TABLE `configurations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT untuk tabel `failed_jobs`
@@ -655,13 +715,13 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT untuk tabel `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT untuk tabel `payment_methods`
 --
 ALTER TABLE `payment_methods`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT untuk tabel `personal_access_tokens`
@@ -685,7 +745,7 @@ ALTER TABLE `promos`
 -- AUTO_INCREMENT untuk tabel `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `users`

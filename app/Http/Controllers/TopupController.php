@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 // Import Models
 use App\Models\Game;
@@ -16,7 +17,7 @@ use App\Models\Transaction;
 // Import Services
 use App\Services\ApigamesService;
 use App\Services\DigiflazzService;
-use App\Services\PaymentGatewayService; // [BARU] Import Service Gateway
+use App\Services\PaymentGatewayService;
 
 class TopupController extends Controller
 {
@@ -29,8 +30,10 @@ class TopupController extends Controller
                             ->orderBy('price', 'asc')
                             ->get();
 
+        // Ambil metode pembayaran. 
+        // Filter 'provider != xendit' opsional, tergantung apakah Xendit khusus deposit atau tidak.
+        // Jika Xendit juga boleh untuk beli langsung, hapus where('provider', '!=', 'xendit')
         $payments = PaymentMethod::where('is_active', 1)
-                    ->where('provider', '!=', 'xendit') // <--- Filter ini kuncinya
                     ->get();
 
         $paymentChannels = [
@@ -58,7 +61,6 @@ class TopupController extends Controller
         return response()->json($result);
     }
 
-    // [UPDATE] Inject PaymentGatewayService di sini
     public function process(Request $request, DigiflazzService $digiflazz, PaymentGatewayService $paymentGateway)
     {
         $request->validate([
@@ -70,7 +72,8 @@ class TopupController extends Controller
         $product = Product::where('code', $request->product_code)->first();
         
         // 1. Cek Harga (VIP vs Guest)
-        $basePrice = (Auth::check() && $product->price_vip > 0) ? $product->price_vip : $product->price;
+        // Gunakan price_vip jika user login & role vip, jika tidak gunakan price biasa
+        $basePrice = (Auth::check() && Auth::user()->role == 'vip') ? $product->price_vip : $product->price;
 
         // 2. Cek Promo
         $discountAmount = 0;
@@ -81,30 +84,35 @@ class TopupController extends Controller
             }
         }
 
-        // 3. Tentukan Admin Fee & Nama Payment
+        // 3. Tentukan Admin Fee & Objek Payment
         $adminFee = 0;
         $paymentCode = $request->payment_method;
-        $paymentMethodObj = null; // Variabel untuk menyimpan object PaymentMethod
+        $paymentMethodObj = null;
 
         if ($paymentCode == 'SALDO') {
             $adminFee = 0;
         } else {
-            // Ambil data payment dari DB untuk hitung fee
             $paymentMethodObj = PaymentMethod::where('code', $paymentCode)->first();
             
             if (!$paymentMethodObj) {
                 return back()->with('error', 'Metode pembayaran tidak valid.');
             }
 
+            // Hitung fee: Flat + Persen
             $adminFee = $paymentMethodObj->flat_fee + ($basePrice * $paymentMethodObj->percent_fee / 100);
         }
 
         // 4. Hitung Total Akhir
         $finalPrice = ceil($basePrice - $discountAmount + $adminFee);
-        $invoice = 'TRX-' . strtoupper(Str::random(6)) . rand(100,999);
+        
+        // 5. Buat Nomor Invoice (TRX-...)
+        $reference = 'TRX-' . strtoupper(Str::random(6)) . rand(100,999);
+
+        // Gabungkan User ID dan Zone ID (jika ada) untuk kolom target
+        $target = $request->user_id . ($request->zone_id ? ' (' . $request->zone_id . ')' : '');
 
         // ====================================================
-        // LOGIKA PEMBAYARAN VIA SALDO (AUTO PROCESS)
+        // A. LOGIKA PEMBAYARAN VIA SALDO (AUTO PROCESS)
         // ====================================================
         if ($paymentCode == 'SALDO') {
             
@@ -118,67 +126,73 @@ class TopupController extends Controller
                 return back()->with('error', 'Saldo akun tidak mencukupi. Sisa saldo: Rp ' . number_format($user->balance));
             }
 
-            // A. Kurangi Saldo User
-            $user->decrement('balance', $finalPrice);
-
-            // B. Buat Transaksi (Status: PAID)
-            $transaction = Transaction::create([
-                'invoice' => $invoice,
-                'user_id' => $user->id,
-                'game_code' => $product->game_code ?? 'GAME',
-                'product_code' => $product->code,
-                'target_id' => $request->user_id,
-                'zone_id' => $request->zone_id,
-                'nickname' => $request->nickname_game ?? '-',
-                'amount' => $finalPrice,
-                'payment_method' => 'SALDO',
-                'status' => 'PAID', // Langsung Lunas
-                'note' => 'Pembayaran via Saldo Akun'
+            // 1. Simpan Transaksi (Status: PAID)
+            $trx = Transaction::create([
+                'user_id'           => $user->id,
+                'reference'         => $reference,      // [FIX] Gunakan 'reference' sesuai DB
+                'product_code'      => $product->code,
+                'target'            => $target,         // [FIX] Simpan ID Game User
+                'nickname_game'     => $request->nickname_game ?? '-',
+                'service'           => 'GAME',          // Penanda Jenis Transaksi
+                'service_name'      => $product->name,
+                'amount'            => $finalPrice,
+                'price'             => $basePrice,      // Harga dasar produk
+                'payment_method'    => 'SALDO',
+                'payment_provider'  => 'balance',
+                'status'            => 'PAID',          // Langsung Lunas
+                'processing_status' => 'PENDING',       // Menunggu diproses Digiflazz
+                'note'              => 'Pembayaran via Saldo Akun'
             ]);
 
-            // C. Proses ke Provider (Digiflazz)
-            $digiflazz->processTransaction($transaction);
+            // 2. Kurangi Saldo User
+            $user->decrement('balance', $finalPrice);
 
-            return redirect()->route('order.check', ['invoice' => $invoice])
-                             ->with('success', 'Pembayaran Berhasil! Transaksi sedang diproses.');
+            // 3. Proses ke Provider (Digiflazz)
+            $digiflazz->processTransaction($trx);
+
+            // Redirect ke halaman riwayat transaksi member (karena sudah lunas)
+            return redirect()->route('member.transactions')
+                             ->with('success', 'Pembayaran Berhasil! Pesanan sedang diproses.');
         }
 
         // ====================================================
-        // LOGIKA PEMBAYARAN VIA GATEWAY / MANUAL (UNPAID)
+        // B. LOGIKA PEMBAYARAN VIA GATEWAY (TRIPAY/XENDIT)
         // ====================================================
         
-        $transaction = Transaction::create([
-            'invoice' => $invoice,
-            'user_id' => Auth::id() ?? null,
-            'game_code' => $product->game_code ?? 'GAME',
-            'product_code' => $product->code,
-            'target_id' => $request->user_id,
-            'zone_id' => $request->zone_id,
-            'nickname' => $request->nickname_game ?? '-',
-            'amount' => $finalPrice,
-            'payment_method' => $paymentCode,
-            'status' => 'UNPAID',
-            'note' => 'Menunggu Pembayaran'
+        // 1. Simpan Transaksi (Status: UNPAID)
+        $trx = Transaction::create([
+            'user_id'           => Auth::id() ?? null, // Bisa null jika Guest
+            'reference'         => $reference,         // [FIX] Gunakan 'reference'
+            'product_code'      => $product->code,
+            'target'            => $target,
+            'nickname_game'     => $request->nickname_game ?? '-',
+            'service'           => 'GAME',
+            'service_name'      => $product->name,
+            'amount'            => $finalPrice,
+            'price'             => $basePrice,
+            'payment_method'    => $paymentMethodObj->code,
+            'payment_provider'  => $paymentMethodObj->provider,
+            'status'            => 'UNPAID',           // Belum Bayar
+            'processing_status' => 'PENDING',
+            'note'              => 'Menunggu Pembayaran via ' . $paymentMethodObj->name
         ]);
 
-        // [BARU] Panggil Payment Gateway Service Dinamis
+        // 2. Panggil Payment Gateway Service
         try {
-            // Kita kirim objek transaksi & objek payment method ke service
-            $result = $paymentGateway->process($transaction, $paymentMethodObj);
+            // Service akan mengembalikan array berisi redirect_url (checkout_url)
+            $result = $paymentGateway->process($trx, $paymentMethodObj);
 
-            // Jika service mengembalikan URL redirect (Tripay/Xendit)
             if (isset($result['redirect_url'])) {
                 return redirect($result['redirect_url']);
+            } else {
+                return back()->with('error', 'Gagal mendapatkan URL pembayaran.');
             }
 
         } catch (\Exception $e) {
-            // Jika terjadi error saat request ke gateway
-            $transaction->update(['status' => 'FAILED', 'note' => 'Gateway Error: ' . $e->getMessage()]);
+            // Jika error, update status jadi FAILED
+            $trx->update(['status' => 'FAILED', 'note' => 'Gateway Error: ' . $e->getMessage()]);
+            Log::error('Payment Gateway Error: ' . $e->getMessage());
             return back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
         }
-
-        // Default: Redirect ke halaman cek order (untuk Manual Transfer)
-        return redirect()->route('order.check', ['invoice' => $invoice])
-                         ->with('success', 'Order berhasil dibuat! Silakan lakukan pembayaran.');
     }
 }
