@@ -140,7 +140,7 @@
                 </a>
             </li>
 
-            {{-- MENU INTEGRASI (DIPERBARUI DENGAN NESTED MENU) --}}
+            {{-- MENU INTEGRASI --}}
             <div class="section-header">Integrasi API</div>
             <li class="nav-item">
                 <a class="nav-link {{ request()->is('admin/integration*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuIntegration" aria-expanded="{{ request()->is('admin/integration*') ? 'true' : 'false' }}">
@@ -166,13 +166,14 @@
 
                         {{-- 3. Payment Gateway (NESTED DROPDOWN) --}}
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuPaymentGateway" aria-expanded="{{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*') ? 'true' : 'false' }}">
+                            {{-- LOGIC: Tambahkan 'admin/integration/midtrans*' agar menu induk tetap terbuka --}}
+                            <a class="nav-link {{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*', 'admin/integration/midtrans*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#menuPaymentGateway" aria-expanded="{{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*', 'admin/integration/midtrans*') ? 'true' : 'false' }}">
                                 <i class="bi bi-credit-card-2-front"></i> Payment Gateway
                                 <i class="bi bi-chevron-down ms-auto small" style="font-size: 0.8em;"></i>
                             </a>
                             
                             {{-- Sub-Menu Level 2 --}}
-                            <div class="collapse {{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*') ? 'show' : '' }}" id="menuPaymentGateway">
+                            <div class="collapse {{ request()->is('admin/integration/tripay*', 'admin/integration/xendit*', 'admin/integration/midtrans*') ? 'show' : '' }}" id="menuPaymentGateway">
                                 <ul class="nav flex-column submenu-nested">
                                     <li class="nav-item">
                                         <a href="{{ route('admin.integration.tripay') }}" class="nav-link {{ request()->routeIs('admin.integration.tripay') ? 'active' : '' }}">
@@ -182,6 +183,12 @@
                                     <li class="nav-item">
                                         <a href="{{ route('admin.integration.xendit') }}" class="nav-link {{ request()->routeIs('admin.integration.xendit') ? 'active' : '' }}">
                                             <i class="bi bi-arrow-return-right small me-2"></i> Xendit
+                                        </a>
+                                    </li>
+                                    {{-- NEW: MIDTRANS MENU --}}
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.integration.midtrans') }}" class="nav-link {{ request()->routeIs('admin.integration.midtrans') ? 'active' : '' }}">
+                                            <i class="bi bi-arrow-return-right small me-2"></i> Midtrans
                                         </a>
                                     </li>
                                 </ul>

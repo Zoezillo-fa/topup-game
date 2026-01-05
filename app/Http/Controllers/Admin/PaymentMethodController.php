@@ -18,6 +18,7 @@ class PaymentMethodController extends Controller
         $gatewayStatus = [
             'tripay' => Configuration::getBy('gateway_tripay_active') == '1',
             'xendit' => Configuration::getBy('gateway_xendit_active') == '1',
+            'midtrans' => Configuration::getBy('gateway_midtrans_active') == '1', // [TAMBAHAN]
         ];
 
         return view('admin.integration.payment.index', compact('payments', 'gatewayStatus'));
@@ -27,6 +28,7 @@ class PaymentMethodController extends Controller
     {
         Configuration::set('gateway_tripay_active', $request->has('tripay') ? '1' : '0');
         Configuration::set('gateway_xendit_active', $request->has('xendit') ? '1' : '0');
+        Configuration::set('gateway_midtrans_active', $request->has('midtrans') ? '1' : '0'); // [TAMBAHAN]
 
         return back()->with('success', 'Status Payment Gateway berhasil diperbarui!');
     }
@@ -35,9 +37,11 @@ class PaymentMethodController extends Controller
     {
         $tripayActive = Configuration::getBy('gateway_tripay_active') == '1';
         $xenditActive = Configuration::getBy('gateway_xendit_active') == '1';
+        $midtransActive = Configuration::getBy('gateway_midtrans_active') == '1'; // [TAMBAHAN]
+        
         $message = [];
 
-        // 1. TRIPAY (Metode Pembayaran Utama - Sync Semua)
+        // 1. TRIPAY (Sync via API)
         if ($tripayActive) {
             $res = $this->fetchTripayChannels();
             if ($res['success']) {
@@ -50,12 +54,19 @@ class PaymentMethodController extends Controller
             $message[] = "Tripay: $deleted dihapus.";
         }
 
-        // 2. XENDIT (KHUSUS QRIS SAJA)
+        // 2. MIDTRANS (Sync Manual List) [TAMBAHAN]
+        if ($midtransActive) {
+            $count = $this->seedMidtransChannels();
+            $message[] = "Midtrans: $count metode.";
+        } else {
+            $deleted = PaymentMethod::where('provider', 'midtrans')->delete();
+            $message[] = "Midtrans: $deleted dihapus.";
+        }
+
+        // 3. XENDIT (Sync QRIS)
         if ($xenditActive) {
-            // Kita hapus metode Xendit selain QRIS (jika ada sisa metode lama)
             PaymentMethod::where('provider', 'xendit')->where('code', '!=', 'QRIS')->delete();
-            
-            $count = $this->seedXenditQRIS();
+            $this->seedXenditQRIS();
             $message[] = "Xendit: QRIS disinkronkan.";
         } else {
             $deleted = PaymentMethod::where('provider', 'xendit')->delete();
@@ -65,31 +76,95 @@ class PaymentMethodController extends Controller
         return back()->with('success', 'Sync Selesai! ' . implode(' | ', $message));
     }
 
-    // --- HELPER XENDIT: HANYA QRIS ---
+    // --- HELPER MIDTRANS: DAFTAR METODE POPULER ---
+    private function seedMidtransChannels()
+    {
+        $channels = [
+            [
+                'code' => 'gopay', 'name' => 'GoPay / GoPay Later', 'type' => 'e_wallet', 
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/gopay.png',
+                'flat' => 0, 'percent' => 2.0
+            ],
+            [
+                'code' => 'shopeepay', 'name' => 'ShopeePay / SPayLater', 'type' => 'e_wallet',
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/shopeepay.png',
+                'flat' => 0, 'percent' => 2.0
+            ],
+            [
+                'code' => 'bca_va', 'name' => 'BCA Virtual Account', 'type' => 'virtual_account',
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/bca.png',
+                'flat' => 4000, 'percent' => 0
+            ],
+            [
+                'code' => 'bni_va', 'name' => 'BNI Virtual Account', 'type' => 'virtual_account',
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/bni.png',
+                'flat' => 4000, 'percent' => 0
+            ],
+            [
+                'code' => 'bri_va', 'name' => 'BRI Virtual Account', 'type' => 'virtual_account',
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/bri.png',
+                'flat' => 4000, 'percent' => 0
+            ],
+            [
+                'code' => 'echannel', 'name' => 'Mandiri Bill Payment', 'type' => 'virtual_account',
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/mandiri.png',
+                'flat' => 4000, 'percent' => 0
+            ],
+            [
+                'code' => 'permata_va', 'name' => 'Permata Virtual Account', 'type' => 'virtual_account',
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/permata.png',
+                'flat' => 4000, 'percent' => 0
+            ],
+            [
+                'code' => 'indomaret', 'name' => 'Indomaret', 'type' => 'retail',
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/indomaret.png',
+                'flat' => 2500, 'percent' => 0
+            ],
+            [
+                'code' => 'alfamart', 'name' => 'Alfamart', 'type' => 'retail',
+                'image' => 'https://docs.midtrans.com/asset/image/payment-list/alfamart.png',
+                'flat' => 2500, 'percent' => 0
+            ],
+        ];
+
+        $count = 0;
+        foreach ($channels as $c) {
+            PaymentMethod::firstOrCreate(
+                ['code' => $c['code'], 'provider' => 'midtrans'],
+                [
+                    'name' => $c['name'],
+                    'type' => $c['type'],
+                    'image' => $c['image'],
+                    'flat_fee' => $c['flat'],
+                    'percent_fee' => $c['percent'],
+                    'is_active' => 1
+                ]
+            );
+            $count++;
+        }
+        return $count;
+    }
+
+    // --- HELPER XENDIT ---
     private function seedXenditQRIS()
     {
-        // Ganti kode unik agar tidak bentrok dengan Tripay
         $code = 'QRIS_XENDIT'; 
         
-        $exists = PaymentMethod::where('code', $code)->where('provider', 'xendit')->exists();
-        
-        if(!$exists) {
+        if(!PaymentMethod::where('code', $code)->where('provider', 'xendit')->exists()) {
             PaymentMethod::create([
-                'code' => $code, // Gunakan kode baru
-                'name' => 'QRIS Xendit (Isi Saldo)', // Nama diperjelas
+                'code' => $code,
+                'name' => 'QRIS Xendit (Isi Saldo)',
                 'provider' => 'xendit',
                 'flat_fee' => 0,
                 'percent_fee' => 0.7, 
-                'image' => null, 
+                'image' => 'https://tripay.co.id/images/payment-channel/qris.png', 
                 'is_active' => 1,
                 'type' => 'e_wallet'
             ]);
-            return 1;
         }
-        return 0;
     }
 
-    // --- HELPER TRIPAY (TETAP SAMA) ---
+    // --- HELPER TRIPAY ---
     private function fetchTripayChannels()
     {
         $apiKey = Configuration::getBy('tripay_api_key');
@@ -129,11 +204,10 @@ class PaymentMethodController extends Controller
 
     public function store(Request $request)
     {
-        // ... (Kode store sama seperti sebelumnya, tidak berubah) ...
         $request->validate([
             'name' => 'required|string|max:100',
             'code' => 'required|string|unique:payment_methods,code',
-            'provider' => 'required|in:tripay,xendit,manual',
+            'provider' => 'required|in:tripay,xendit,manual,midtrans', // [TAMBAHAN]
             'flat_fee' => 'required|numeric|min:0',
             'percent_fee' => 'required|numeric|min:0|max:100',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,webp|max:2048',
@@ -162,10 +236,9 @@ class PaymentMethodController extends Controller
 
     public function update(Request $request, $id)
     {
-        // ... (Kode update sama seperti sebelumnya, tidak berubah) ...
         $request->validate([
             'name' => 'required|string|max:100',
-            'provider' => 'required|in:tripay,xendit,manual',
+            'provider' => 'required|in:tripay,xendit,manual,midtrans', // [TAMBAHAN]
             'flat_fee' => 'required|numeric|min:0',
             'percent_fee' => 'required|numeric|min:0|max:100',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,webp|max:2048',

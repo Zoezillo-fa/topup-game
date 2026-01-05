@@ -134,4 +134,76 @@ class CallbackController extends Controller
 
         return Response::json(['success' => true]);
     }
+
+    // ==========================================
+    // 3. HANDLER CALLBACK MIDTRANS
+    // ==========================================
+    public function handleMidtrans(Request $request, DigiflazzService $digiflazz)
+    {
+        // Konfigurasi Library
+        \Midtrans\Config::$serverKey = Configuration::getBy('midtrans_server_key');
+        \Midtrans\Config::$isProduction = (Configuration::getBy('midtrans_mode') == 'production');
+
+        try {
+            $notif = new \Midtrans\Notification();
+        } catch (\Exception $e) {
+            return Response::json(['message' => 'Invalid Notification'], 400);
+        }
+
+        $transactionStatus = $notif->transaction_status;
+        $type = $notif->payment_type;
+        $orderId = $notif->order_id;
+        $fraud = $notif->fraud_status;
+
+        // Cari transaksi
+        $trx = Transaction::where('reference', $orderId)->first();
+
+        if ($trx) {
+            // Logic Status Midtrans
+            if ($transactionStatus == 'capture') {
+                if ($type == 'credit_card') {
+                    if ($fraud == 'challenge') {
+                        $trx->update(['status' => 'UNPAID']); // Masih menunggu konfirmasi
+                    } else {
+                        $this->processSuccess($trx, $digiflazz, 'Midtrans CC');
+                    }
+                }
+            } elseif ($transactionStatus == 'settlement') {
+                // SUKSES / LUNAS
+                $this->processSuccess($trx, $digiflazz, 'Midtrans Settlement');
+            } elseif ($transactionStatus == 'pending') {
+                $trx->update(['status' => 'UNPAID']);
+            } elseif ($transactionStatus == 'deny' || $transactionStatus == 'expire' || $transactionStatus == 'cancel') {
+                $trx->update([
+                    'status' => 'EXPIRED',
+                    'processing_status' => 'FAILED'
+                ]);
+            }
+        }
+
+        return Response::json(['success' => true]);
+    }
+
+    // Helper untuk memproses kesuksesan (supaya tidak duplikat kodingan)
+    private function processSuccess($trx, $digiflazz, $logPrefix)
+    {
+        if ($trx->status == 'UNPAID') {
+            if ($trx->service == 'DEPOSIT') {
+                $trx->update([
+                    'status' => 'PAID',
+                    'processing_status' => 'SUCCESS',
+                    'sn' => 'DEP/' . time()
+                ]);
+                $user = $trx->user;
+                if ($user) {
+                    $user->balance += $trx->amount;
+                    $user->save();
+                    Log::info("$logPrefix Success: {$trx->reference} (+{$trx->amount})");
+                }
+            } else {
+                $trx->update(['status' => 'PAID']);
+                $digiflazz->processTransaction($trx);
+            }
+        }
+    }
 }

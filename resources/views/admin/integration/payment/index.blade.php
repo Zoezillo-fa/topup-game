@@ -23,30 +23,30 @@
         </div>
     @endif
 
-    {{-- [BARU] CARD STATUS PAYMENT GATEWAY (RE-DESIGN) --}}
+    {{-- CARD STATUS PAYMENT GATEWAY --}}
     <div class="card shadow-sm mb-4 border-start-primary" style="border-left: 5px solid #4e73df;">
         <div class="card-body p-4">
             <div class="row align-items-center">
-                {{-- Bagian Kiri: Penjelasan --}}
-                <div class="col-lg-7 mb-3 mb-lg-0">
+                {{-- Penjelasan --}}
+                <div class="col-xl-4 col-lg-12 mb-3 mb-xl-0">
                     <h5 class="fw-bold text-dark mb-1">
                         <i class="bi bi-sliders me-2 text-primary"></i>Status Payment Gateway
                     </h5>
                     <p class="text-muted small mb-0">
-                        Atur gateway mana yang ingin diaktifkan. <br>
+                        Pilih gateway yang aktif. <br>
                         <span class="text-danger fw-bold"><i class="bi bi-exclamation-circle me-1"></i>Peringatan:</span> 
                         Jika gateway dimatikan (OFF), metode pembayarannya akan <strong>dihapus</strong> saat Sync Otomatis.
                     </p>
                 </div>
 
-                {{-- Bagian Kanan: Tombol Switch yang Lebih Bagus --}}
-                <div class="col-lg-5">
+                {{-- Tombol Switch --}}
+                <div class="col-xl-8 col-lg-12">
                     <form action="{{ route('admin.integration.payment.status') }}" method="POST">
                         @csrf
-                        <div class="d-flex justify-content-lg-end gap-3">
+                        <div class="d-flex flex-wrap justify-content-xl-end gap-3">
                             
                             {{-- Switch Tripay --}}
-                            <div class="d-flex align-items-center border rounded p-2 px-3 bg-white shadow-sm" style="min-width: 140px;">
+                            <div class="d-flex align-items-center border rounded p-2 px-3 bg-white shadow-sm flex-fill" style="min-width: 140px;">
                                 <div class="flex-grow-1">
                                     <span class="fw-bold d-block text-dark" style="font-size: 0.9rem;">Tripay</span>
                                     @if(($gatewayStatus['tripay'] ?? false))
@@ -64,7 +64,7 @@
                             </div>
                             
                             {{-- Switch Xendit --}}
-                            <div class="d-flex align-items-center border rounded p-2 px-3 bg-white shadow-sm" style="min-width: 140px;">
+                            <div class="d-flex align-items-center border rounded p-2 px-3 bg-white shadow-sm flex-fill" style="min-width: 140px;">
                                 <div class="flex-grow-1">
                                     <span class="fw-bold d-block text-dark" style="font-size: 0.9rem;">Xendit</span>
                                     @if(($gatewayStatus['xendit'] ?? false))
@@ -76,6 +76,24 @@
                                 <div class="form-check form-switch ms-3 mb-0">
                                     <input class="form-check-input" type="checkbox" name="xendit" 
                                         {{ ($gatewayStatus['xendit'] ?? false) ? 'checked' : '' }} 
+                                        onchange="this.form.submit()" 
+                                        style="cursor: pointer; transform: scale(1.4); margin-left: 0;">
+                                </div>
+                            </div>
+
+                            {{-- Switch Midtrans [BARU] --}}
+                            <div class="d-flex align-items-center border rounded p-2 px-3 bg-white shadow-sm flex-fill" style="min-width: 140px;">
+                                <div class="flex-grow-1">
+                                    <span class="fw-bold d-block text-dark" style="font-size: 0.9rem;">Midtrans</span>
+                                    @if(($gatewayStatus['midtrans'] ?? false))
+                                        <span class="badge text-white" style="font-size: 0.65rem; background-color: #002855;">AKTIF</span>
+                                    @else
+                                        <span class="badge bg-secondary" style="font-size: 0.65rem;">NON-AKTIF</span>
+                                    @endif
+                                </div>
+                                <div class="form-check form-switch ms-3 mb-0">
+                                    <input class="form-check-input" type="checkbox" name="midtrans" 
+                                        {{ ($gatewayStatus['midtrans'] ?? false) ? 'checked' : '' }} 
                                         onchange="this.form.submit()" 
                                         style="cursor: pointer; transform: scale(1.4); margin-left: 0;">
                                 </div>
@@ -99,7 +117,7 @@
                     <i class="bi bi-plus-lg me-1"></i> Tambah Manual
                 </button>
 
-                {{-- [UPDATE] Tombol Sync Otomatis --}}
+                {{-- Tombol Sync Otomatis --}}
                 <form action="{{ route('admin.integration.payment.sync') }}" method="POST" class="d-inline" onsubmit="return confirm('Sync Otomatis akan:\n1. Menambahkan metode baru dari Gateway yang AKTIF.\n2. MENGHAPUS metode dari Gateway yang NON-AKTIF.\n\nApakah Anda yakin ingin melanjutkan?');">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-warning fw-bold text-dark shadow-sm">
@@ -143,6 +161,8 @@
                                     <span class="badge bg-info text-dark">Tripay</span>
                                 @elseif($pay->provider == 'xendit')
                                     <span class="badge bg-primary">Xendit</span>
+                                @elseif($pay->provider == 'midtrans')
+                                    <span class="badge text-white" style="background-color: #002855;">Midtrans</span>
                                 @else
                                     <span class="badge bg-secondary">Manual</span>
                                 @endif
@@ -200,12 +220,14 @@
                                                         <select name="provider" class="form-select fw-bold">
                                                             <option value="tripay" {{ $pay->provider == 'tripay' ? 'selected' : '' }}>Tripay</option>
                                                             <option value="xendit" {{ $pay->provider == 'xendit' ? 'selected' : '' }}>Xendit</option>
+                                                            <option value="midtrans" {{ $pay->provider == 'midtrans' ? 'selected' : '' }}>Midtrans</option>
                                                             <option value="manual" {{ $pay->provider == 'manual' ? 'selected' : '' }}>Manual</option>
                                                         </select>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="fw-bold small text-uppercase">Kode Metode</label>
                                                         <input type="text" name="code" class="form-control" value="{{ $pay->code }}">
+                                                        <small class="text-muted">Untuk Midtrans: gopay, shopeepay, bca_va, dll.</small>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
@@ -279,16 +301,17 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="fw-bold">Nama Metode</label>
-                                <input type="text" name="name" class="form-control" required placeholder="Contoh: Transfer Bank BCA">
+                                <input type="text" name="name" class="form-control" required placeholder="Contoh: GoPay / BCA VA">
                             </div>
                             <div class="mb-3">
                                 <label class="fw-bold">Kode Unik</label>
-                                <input type="text" name="code" class="form-control" required placeholder="MANUAL_BCA">
+                                <input type="text" name="code" class="form-control" required placeholder="gopay / bca_va / MANUAL_XXX">
                             </div>
                             <div class="mb-3">
                                 <label class="fw-bold">Provider</label>
                                 <select name="provider" class="form-select">
                                     <option value="manual">Manual</option>
+                                    <option value="midtrans">Midtrans</option>
                                     <option value="xendit">Xendit</option>
                                     <option value="tripay">Tripay</option>
                                 </select>

@@ -228,4 +228,31 @@ class IntegrationController extends Controller
             return back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
+
+    // --- MIDTRANS INTEGRATION ---
+    public function midtrans()
+    {
+        $config = [
+            'midtrans_server_key' => \App\Models\Configuration::getBy('midtrans_server_key'),
+            'midtrans_client_key' => \App\Models\Configuration::getBy('midtrans_client_key'),
+            'midtrans_mode'       => \App\Models\Configuration::getBy('midtrans_mode') ?? 'sandbox',
+        ];
+        
+        return view('admin.integration.midtrans', compact('config'));
+    }
+
+    public function updateMidtrans(Request $request)
+    {
+        $request->validate([
+            'midtrans_mode'       => 'required|in:sandbox,production',
+            'midtrans_server_key' => 'required|string',
+            'midtrans_client_key' => 'required|string',
+        ]);
+
+        \App\Models\Configuration::set('midtrans_mode', $request->midtrans_mode);
+        \App\Models\Configuration::set('midtrans_server_key', $request->midtrans_server_key);
+        \App\Models\Configuration::set('midtrans_client_key', $request->midtrans_client_key);
+
+        return back()->with('success', 'Konfigurasi Midtrans berhasil disimpan!');
+    }
 }

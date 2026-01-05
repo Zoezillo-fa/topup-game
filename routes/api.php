@@ -17,3 +17,5 @@ Route::post('/callback/tripay', [CallbackController::class, 'handleTripay']);
 
 // URL: domain-anda.com/api/callback/xendit
 Route::post('/callback/xendit', [CallbackController::class, 'handleXendit']);
+
+Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtrans']);

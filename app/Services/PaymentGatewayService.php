@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Transaction;
 use App\Models\PaymentMethod;
 use Illuminate\Support\Facades\Http;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class PaymentGatewayService
 {
@@ -18,6 +20,10 @@ class PaymentGatewayService
             
             case 'xendit':
                 return $this->processXendit($transaction, $method);
+                break;
+
+            case 'midtrans': // <--- TAMBAHAN BARU
+                return $this->processMidtrans($transaction, $method);
                 break;
 
             case 'manual':
@@ -65,5 +71,48 @@ class PaymentGatewayService
         }
 
         return ['success' => false, 'message' => 'Gagal koneksi ke Xendit'];
+    }
+
+    private function processMidtrans($trx, $method)
+    {
+        // 1. Set Konfigurasi Midtrans
+        Config::$serverKey = Configuration::getBy('midtrans_server_key');
+        Config::$isProduction = (Configuration::getBy('midtrans_mode') == 'production');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        // 2. Siapkan Parameter Snap
+        $params = [
+            'transaction_details' => [
+                'order_id' => $trx->reference,
+                'gross_amount' => (int) $trx->amount,
+            ],
+            'customer_details' => [
+                'first_name' => $trx->user ? $trx->user->name : 'Guest',
+                'email' => $trx->user ? $trx->user->email : 'guest@example.com',
+                'phone' => $trx->target ?? '08123456789', // Menggunakan no hp target jika ada
+            ],
+            'item_details' => [
+                [
+                    'id' => $trx->product_code ?? 'DEPOSIT',
+                    'price' => (int) $trx->amount,
+                    'quantity' => 1,
+                    'name' => $trx->service_name ?? 'Topup Saldo',
+                ]
+            ],
+            // Opsional: Membatasi metode pembayaran sesuai pilihan user
+            'enabled_payments' => [$method->code] // Pastikan code di database sesuai (gopay, bca_va, dll)
+        ];
+
+        try {
+            // 3. Request Snap Token
+            $paymentUrl = Snap::createTransaction($params)->redirect_url;
+
+            // Update referensi jika perlu (Midtrans pakai order_id kita, jadi aman)
+            
+            return ['success' => true, 'redirect_url' => $paymentUrl];
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Midtrans Error: ' . $e->getMessage()];
+        }
     }
 }

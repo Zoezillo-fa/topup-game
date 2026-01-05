@@ -144,17 +144,21 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     Route::post('/integration/tripay', [IntegrationController::class, 'updateTripay'])->name('admin.integration.tripay.update');
     Route::post('/integration/tripay/check', [IntegrationController::class, 'checkTripay'])->name('admin.integration.tripay.check');
 
-    // 3. Xendit (Payment Gateway) [BARU]
+    // 3. Xendit (Payment Gateway)
     Route::get('/integration/xendit', [IntegrationController::class, 'xendit'])->name('admin.integration.xendit');
     Route::post('/integration/xendit', [IntegrationController::class, 'updateXendit'])->name('admin.integration.xendit.update');
     Route::post('/integration/xendit/check', [IntegrationController::class, 'checkXendit'])->name('admin.integration.xendit.check');
 
-    // 4. Apigames (Cek ID Game)
+    // 4. MIDTRANS (Payment Gateway) <-- [PENAMBAHAN BARU DISINI]
+    Route::get('/integration/midtrans', [IntegrationController::class, 'midtrans'])->name('admin.integration.midtrans');
+    Route::post('/integration/midtrans', [IntegrationController::class, 'updateMidtrans'])->name('admin.integration.midtrans.update');
+
+    // 5. Apigames (Cek ID Game)
     Route::get('/integration/apigames', [IntegrationController::class, 'apigames'])->name('admin.integration.apigames');
     Route::post('/integration/apigames', [IntegrationController::class, 'updateApigames'])->name('admin.integration.apigames.update');
     Route::post('/integration/apigames/check', [IntegrationController::class, 'checkApigames'])->name('admin.integration.apigames.check');
 
-    // 5. Metode Pembayaran (Multi-Gateway) [UPDATED]
+    // 6. Metode Pembayaran (Multi-Gateway)
     Route::get('/integration/payment', [PaymentMethodController::class, 'index'])->name('admin.integration.payment');
     
     // Simpan Manual
@@ -162,10 +166,10 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     // Update Data
     Route::put('/integration/payment/{id}', [PaymentMethodController::class, 'update'])->name('admin.integration.payment.update');
     
-    // [BARU] Update Status Gateway (Enable/Disable)
+    // Update Status Gateway (Enable/Disable)
     Route::post('/integration/payment/status', [PaymentMethodController::class, 'updateGatewayStatus'])->name('admin.integration.payment.status');
     
-    // [BARU] Sync Otomatis (Tripay & Xendit)
+    // Sync Otomatis
     Route::post('/integration/payment/sync-auto', [PaymentMethodController::class, 'syncAuto'])->name('admin.integration.payment.sync');
    
     // --- CONFIG WEB (Logo, Nama, Footer) ---
@@ -197,14 +201,14 @@ Route::middleware(['auth'])->group(function() {
     Route::get('/member/deposit', [\App\Http\Controllers\Member\DepositController::class, 'index'])->name('deposit.index');
     Route::post('/member/deposit', [\App\Http\Controllers\Member\DepositController::class, 'store'])->name('deposit.store');
 
-    // [BARU] FITUR RIWAYAT TRANSAKSI
+    // FITUR RIWAYAT TRANSAKSI
     Route::get('/member/transactions', [\App\Http\Controllers\Member\TransactionController::class, 'index'])->name('member.transactions');
     
     // Proses Update
     Route::put('/member/profile', [MemberController::class, 'updateProfile'])->name('member.profile.update');
     Route::put('/member/password', [MemberController::class, 'updatePassword'])->name('member.password.update');
 
-    // Upgrade VIP (Redirect ke WA Admin)
+    // Upgrade VIP
     Route::get('/member/upgrade-vip', function() {
         $phone = \App\Models\Configuration::getBy('whatsapp_number') ?? '628123456789';
         $text = "Halo Admin, saya ingin upgrade akun saya menjadi VIP Member.";
