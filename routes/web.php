@@ -114,7 +114,9 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     
     // --- MANAJEMEN USER & TRANSAKSI ---
     Route::resource('users', UserController::class, ['as' => 'admin']);
-    Route::resource('transactions', TransactionController::class, ['as' => 'admin'])->only(['index', 'update']);
+    // Route Transactions (Resource ini sudah mencakup index, create, store, edit, update, destroy)
+    Route::resource('transactions', TransactionController::class, ['as' => 'admin']);
+    
     Route::post('/users/{id}/balance', [UserController::class, 'updateBalance'])->name('admin.users.balance');
     
     // --- MANAJEMEN GAME ---
@@ -149,7 +151,7 @@ Route::prefix('admin')->middleware(['auth', 'checkRole:admin'])->group(function 
     Route::post('/integration/xendit', [IntegrationController::class, 'updateXendit'])->name('admin.integration.xendit.update');
     Route::post('/integration/xendit/check', [IntegrationController::class, 'checkXendit'])->name('admin.integration.xendit.check');
 
-    // 4. MIDTRANS (Payment Gateway) <-- [PENAMBAHAN BARU DISINI]
+    // 4. MIDTRANS (Payment Gateway)
     Route::get('/integration/midtrans', [IntegrationController::class, 'midtrans'])->name('admin.integration.midtrans');
     Route::post('/integration/midtrans', [IntegrationController::class, 'updateMidtrans'])->name('admin.integration.midtrans.update');
 

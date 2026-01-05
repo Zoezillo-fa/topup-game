@@ -133,11 +133,27 @@
                 </a>
             </li>
 
+            {{-- MENU TRANSAKSI (SUDAH DIPERBAIKI SESUAI TEMA) --}}
             <div class="section-header">Monitoring</div>
             <li class="nav-item">
-                <a href="{{ route('admin.transactions.index') }}" class="nav-link {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
-                    <i class="bi bi-receipt"></i> Transaksi
+                <a class="nav-link {{ request()->routeIs('admin.transactions.*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" href="#collapseTransaction" aria-expanded="{{ request()->routeIs('admin.transactions.*') ? 'true' : 'false' }}">
+                    <i class="bi bi-cart-fill"></i> Transaksi
+                    <i class="bi bi-chevron-down ms-auto small"></i>
                 </a>
+                <div class="collapse {{ request()->routeIs('admin.transactions.*') ? 'show' : '' }}" id="collapseTransaction">
+                    <ul class="nav flex-column submenu">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.transactions.create') }}" class="nav-link {{ request()->routeIs('admin.transactions.create') ? 'active' : '' }}">
+                                <i class="bi bi-plus-circle"></i> Buat Pesanan Baru
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.transactions.index') }}" class="nav-link {{ request()->routeIs('admin.transactions.index') ? 'active' : '' }}">
+                                <i class="bi bi-clock-history"></i> Riwayat Transaksi
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
             {{-- MENU INTEGRASI --}}

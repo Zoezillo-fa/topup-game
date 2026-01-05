@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 05 Jan 2026 pada 12.51
+-- Waktu pembuatan: 05 Jan 2026 pada 13.44
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -41,16 +41,16 @@ INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
 ('laravel-cache-config_apigames_merchant', 's:17:\"M220704FEUE9178NP\";', 1767450721),
 ('laravel-cache-config_apigames_secret', 's:64:\"bd6fbd73d36bfdb7aa818288c604fe5543f977f8ace024bdeccfbfec9185d7d6\";', 1767450721),
 ('laravel-cache-config_app_banner', 's:69:\"/storage/images/settings/MVKwmLuUA43ws9w0yh33e8UXC4RPgc3E7qV6k2qF.jpg\";', 1767614142),
-('laravel-cache-config_app_logo', 'N;', 1767615263),
-('laravel-cache-config_app_name', 's:11:\"Zoestore Id\";', 1767614146),
-('laravel-cache-config_digiflazz_key', 's:36:\"ea5dc837-f75c-565f-b663-c272a9433cb4\";', 1767450719),
-('laravel-cache-config_digiflazz_mode', 's:10:\"production\";', 1767450719),
-('laravel-cache-config_digiflazz_username', 's:12:\"zeyumoD22vqD\";', 1767450719),
-('laravel-cache-config_footer_description', 's:42:\"Website Topup Game Tercepat Dan Terpercaya\";', 1767614146),
-('laravel-cache-config_gateway_midtrans_active', 's:1:\"0\";', 1767615316),
-('laravel-cache-config_gateway_tripay_active', 's:1:\"1\";', 1767615316),
-('laravel-cache-config_gateway_xendit_active', 's:1:\"0\";', 1767615316),
-('laravel-cache-config_is_maintenance', 'N;', 1767615316),
+('laravel-cache-config_app_logo', 'N;', 1767617433),
+('laravel-cache-config_app_name', 's:11:\"Zoestore Id\";', 1767616155),
+('laravel-cache-config_digiflazz_key', 's:36:\"ea5dc837-f75c-565f-b663-c272a9433cb4\";', 1767618182),
+('laravel-cache-config_digiflazz_mode', 's:10:\"production\";', 1767618182),
+('laravel-cache-config_digiflazz_username', 's:12:\"zeyumoD22vqD\";', 1767618182),
+('laravel-cache-config_footer_description', 's:42:\"Website Topup Game Tercepat Dan Terpercaya\";', 1767616155),
+('laravel-cache-config_gateway_midtrans_active', 's:1:\"0\";', 1767616967),
+('laravel-cache-config_gateway_tripay_active', 's:1:\"1\";', 1767616967),
+('laravel-cache-config_gateway_xendit_active', 's:1:\"0\";', 1767616967),
+('laravel-cache-config_is_maintenance', 'N;', 1767618468),
 ('laravel-cache-config_midtrans_client_key', 's:30:\"SB-Mid-client-9FHjNP_lmvaXd6_F\";', 1767608151),
 ('laravel-cache-config_midtrans_mode', 's:7:\"sandbox\";', 1767608151),
 ('laravel-cache-config_midtrans_server_key', 's:38:\"SB-Mid-server-VHc_ltMQIJFnI9EE0KggMava\";', 1767608151),
@@ -58,15 +58,15 @@ INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
 ('laravel-cache-config_page_faq', 's:834:\"1. Apa itu Zoestore ID?\r\nZoestore ID adalah website top up game online yang cepat dan terpercaya.\r\n\r\n2. Apakah Zoestore ID aman?\r\nYa, kami menggunakan sistem pembayaran yang aman.\r\n\r\n3. Bagaimana cara top up?\r\nPilih game, masukkan User ID, pilih pembayaran, lalu selesaikan transaksi.\r\n\r\n4. Berapa lama proses top up?\r\nSebagian besar diproses secara instan.\r\n\r\n5. Apakah perlu login?\r\nTidak, top up bisa dilakukan tanpa registrasi.\r\n\r\n6. Metode pembayaran apa saja?\r\nE-wallet, transfer bank, dan metode digital lainnya.\r\n\r\n7. Jika top up belum masuk?\r\nHubungi customer service dengan bukti transaksi.\r\n\r\n8. Apakah bisa refund?\r\nRefund hanya untuk kesalahan dari pihak Zoestore ID.\r\n\r\n9. Apakah harga bisa berubah?\r\nYa, harga dapat berubah sewaktu-waktu.\r\n\r\n10. Bagaimana menghubungi CS?\r\nMelalui kontak resmi yang tersedia di website.\";', 1767614146),
 ('laravel-cache-config_page_privacy', 's:1187:\"Zoestore ID menghargai dan melindungi privasi setiap pengguna. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, menyimpan, dan melindungi informasi pribadi pengguna.\r\n\r\n1. Informasi yang Dikumpulkan\r\n- User ID dan Server ID game\r\n- Data transaksi dan metode pembayaran\r\n- Data teknis seperti alamat IP dan aktivitas website\r\n\r\n2. Penggunaan Informasi\r\nInformasi digunakan untuk memproses transaksi, meningkatkan layanan, serta keperluan keamanan dan dukungan pelanggan.\r\n\r\n3. Keamanan Data\r\nKami menerapkan sistem keamanan yang wajar untuk melindungi data pengguna dari akses yang tidak sah.\r\n\r\n4. Pembagian Informasi\r\nZoestore ID tidak menjual data pengguna kepada pihak ketiga, kecuali untuk proses pembayaran atau kewajiban hukum.\r\n\r\n5. Cookie\r\nWebsite dapat menggunakan cookie untuk meningkatkan pengalaman pengguna.\r\n\r\n6. Hak Pengguna\r\nPengguna berhak meminta informasi, perbaikan, atau penghapusan data sesuai hukum yang berlaku.\r\n\r\n7. Perubahan Kebijakan\r\nKebijakan Privasi dapat diperbarui sewaktu-waktu dan berlaku sejak tanggal diperbarui.\r\n\r\n8. Persetujuan\r\nDengan menggunakan layanan Zoestore ID, pengguna dianggap menyetujui Kebijakan Privasi ini.\";', 1767614146),
 ('laravel-cache-config_page_terms', 's:1096:\"Dengan menggunakan layanan Zoestore ID, pengguna dianggap menyetujui seluruh syarat dan ketentuan berikut:\r\n\r\n1. Ketentuan Umum\r\nZoestore ID menyediakan layanan top up game digital secara online.\r\n\r\n2. Data Pengguna\r\nPengguna wajib mengisi data dengan benar. Kesalahan input bukan tanggung jawab Zoestore ID.\r\n\r\n3. Transaksi dan Pembayaran\r\n- Semua transaksi bersifat final\r\n- Harga dapat berubah sewaktu-waktu\r\n- Pesanan diproses setelah pembayaran berhasil\r\n\r\n4. Proses Top Up\r\nTop up diproses secara otomatis, namun dapat terjadi keterlambatan akibat gangguan sistem.\r\n\r\n5. Refund\r\nRefund hanya berlaku jika terjadi kesalahan dari pihak Zoestore ID.\r\n\r\n6. Ketersediaan Layanan\r\nZoestore ID berhak mengubah atau menghentikan layanan tanpa pemberitahuan.\r\n\r\n7. Hak Kekayaan Intelektual\r\nSeluruh konten Zoestore ID dilindungi oleh hukum.\r\n\r\n8. Batasan Tanggung Jawab\r\nZoestore ID tidak bertanggung jawab atas kerugian akibat kelalaian pengguna.\r\n\r\n9. Perubahan Ketentuan\r\nSyarat dan Ketentuan dapat diperbarui sewaktu-waktu.\r\n\r\n10. Hukum yang Berlaku\r\nDiatur berdasarkan hukum Republik Indonesia.\";', 1767614146),
-('laravel-cache-config_payment_logo_1', 's:69:\"/storage/images/settings/MAZ6RMibykIf1xSdU5tf3PzDMwDI7M2sFdOWtMv3.jpg\";', 1767614781),
-('laravel-cache-config_payment_logo_2', 's:69:\"/storage/images/settings/A4WOOewXOuw5Oz4DlFsx9f4zkxYI2pV7U6MjkJKA.jpg\";', 1767614781),
-('laravel-cache-config_payment_logo_3', 's:69:\"/storage/images/settings/KrLtL0qaHJcYnaTtJaBRZxSiBE66b4lYGhkXoILc.jpg\";', 1767614781),
-('laravel-cache-config_payment_logo_4', 's:69:\"/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg\";', 1767614781),
+('laravel-cache-config_payment_logo_1', 's:69:\"/storage/images/settings/MAZ6RMibykIf1xSdU5tf3PzDMwDI7M2sFdOWtMv3.jpg\";', 1767616373),
+('laravel-cache-config_payment_logo_2', 's:69:\"/storage/images/settings/A4WOOewXOuw5Oz4DlFsx9f4zkxYI2pV7U6MjkJKA.jpg\";', 1767616373),
+('laravel-cache-config_payment_logo_3', 's:69:\"/storage/images/settings/KrLtL0qaHJcYnaTtJaBRZxSiBE66b4lYGhkXoILc.jpg\";', 1767616373),
+('laravel-cache-config_payment_logo_4', 's:69:\"/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg\";', 1767616373),
 ('laravel-cache-config_tripay_api_key', 's:44:\"DEV-TN3p8mNH8ol7RGBAyQxktQ406lHU7NjG2ezimLEW\";', 1767612852),
 ('laravel-cache-config_tripay_merchant_code', 's:6:\"T13867\";', 1767450723),
 ('laravel-cache-config_tripay_mode', 's:7:\"sandbox\";', 1767612852),
 ('laravel-cache-config_tripay_private_key', 's:29:\"Ij23U-wKJTj-KrQ0v-WqU92-E4Dwr\";', 1767450723),
-('laravel-cache-config_whatsapp_number', 's:12:\"087894692316\";', 1767614146),
+('laravel-cache-config_whatsapp_number', 's:12:\"087894692316\";', 1767616155),
 ('laravel-cache-config_xendit_callback_token', 's:48:\"z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p\";', 1767609158),
 ('laravel-cache-config_xendit_mode', 's:10:\"production\";', 1767609158),
 ('laravel-cache-config_xendit_secret_key', 's:78:\"xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy\";', 1767609158);
@@ -518,7 +518,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('FCvNVmf6H110TcXqb5KWra9KXF2XcYRV1Ua2X7FL', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiRlFub0tIYzJ6SkQ4Y2VKWGZVbFNyaHRJU0dhcUJOOHF3ZTRWTlk4TyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0NzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL3BheW1lbnQiO31zOjk6Il9wcmV2aW91cyI7YToyOntzOjM6InVybCI7czo0NzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL3BheW1lbnQiO3M6NToicm91dGUiO3M6MjU6ImFkbWluLmludGVncmF0aW9uLnBheW1lbnQiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1767613876);
+('FCvNVmf6H110TcXqb5KWra9KXF2XcYRV1Ua2X7FL', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiRlFub0tIYzJ6SkQ4Y2VKWGZVbFNyaHRJU0dhcUJOOHF3ZTRWTlk4TyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0NzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL3BheW1lbnQiO31zOjk6Il9wcmV2aW91cyI7YToyOntzOjM6InVybCI7czo0NzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL3RyYW5zYWN0aW9ucy9jcmVhdGUiO3M6NToicm91dGUiO3M6MjU6ImFkbWluLnRyYW5zYWN0aW9ucy5jcmVhdGUiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1767617028);
 
 -- --------------------------------------------------------
 
