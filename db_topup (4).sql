@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 02 Jan 2026 pada 21.23
+-- Waktu pembuatan: 05 Jan 2026 pada 10.50
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -38,29 +38,33 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('laravel-cache-config_apigames_merchant', 's:17:\"M220704FEUE9178NP\";', 1767377165),
-('laravel-cache-config_apigames_secret', 's:64:\"bd6fbd73d36bfdb7aa818288c604fe5543f977f8ace024bdeccfbfec9185d7d6\";', 1767377165),
-('laravel-cache-config_app_logo', 'N;', 1767383439),
-('laravel-cache-config_app_name', 's:11:\"Zoestore Id\";', 1767382546),
-('laravel-cache-config_digiflazz_key', 's:36:\"ea5dc837-f75c-565f-b663-c272a9433cb4\";', 1767377166),
-('laravel-cache-config_digiflazz_mode', 's:10:\"production\";', 1767377166),
-('laravel-cache-config_digiflazz_username', 's:12:\"zeyumoD22vqD\";', 1767377166),
-('laravel-cache-config_footer_description', 's:42:\"Website Topup Game Tercepat Dan Terpercaya\";', 1767382546),
-('laravel-cache-config_gateway_tripay_active', 's:1:\"1\";', 1767380747),
-('laravel-cache-config_gateway_xendit_active', 's:1:\"1\";', 1767380747),
-('laravel-cache-config_is_maintenance', 'N;', 1767384544),
-('laravel-cache-config_payment_logo_1', 's:69:\"/storage/images/settings/MAZ6RMibykIf1xSdU5tf3PzDMwDI7M2sFdOWtMv3.jpg\";', 1767382546),
-('laravel-cache-config_payment_logo_2', 's:69:\"/storage/images/settings/A4WOOewXOuw5Oz4DlFsx9f4zkxYI2pV7U6MjkJKA.jpg\";', 1767382546),
-('laravel-cache-config_payment_logo_3', 's:69:\"/storage/images/settings/KrLtL0qaHJcYnaTtJaBRZxSiBE66b4lYGhkXoILc.jpg\";', 1767382546),
-('laravel-cache-config_payment_logo_4', 's:69:\"/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg\";', 1767382546),
-('laravel-cache-config_tripay_api_key', 's:44:\"DEV-TN3p8mNH8ol7RGBAyQxktQ406lHU7NjG2ezimLEW\";', 1767380749),
-('laravel-cache-config_tripay_merchant_code', 's:6:\"T13867\";', 1767378621),
-('laravel-cache-config_tripay_mode', 's:7:\"sandbox\";', 1767380749),
-('laravel-cache-config_tripay_private_key', 's:29:\"Ij23U-wKJTj-KrQ0v-WqU92-E4Dwr\";', 1767378621),
-('laravel-cache-config_whatsapp_number', 's:12:\"087894692316\";', 1767382546),
-('laravel-cache-config_xendit_callback_token', 's:48:\"z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p\";', 1767377822),
-('laravel-cache-config_xendit_mode', 's:10:\"production\";', 1767377822),
-('laravel-cache-config_xendit_secret_key', 's:78:\"xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy\";', 1767382745);
+('laravel-cache-config_apigames_merchant', 's:17:\"M220704FEUE9178NP\";', 1767450721),
+('laravel-cache-config_apigames_secret', 's:64:\"bd6fbd73d36bfdb7aa818288c604fe5543f977f8ace024bdeccfbfec9185d7d6\";', 1767450721),
+('laravel-cache-config_app_logo', 'N;', 1767450354),
+('laravel-cache-config_app_name', 's:11:\"Zoestore Id\";', 1767450354),
+('laravel-cache-config_digiflazz_key', 's:36:\"ea5dc837-f75c-565f-b663-c272a9433cb4\";', 1767450719),
+('laravel-cache-config_digiflazz_mode', 's:10:\"production\";', 1767450719),
+('laravel-cache-config_digiflazz_username', 's:12:\"zeyumoD22vqD\";', 1767450719),
+('laravel-cache-config_footer_description', 's:42:\"Website Topup Game Tercepat Dan Terpercaya\";', 1767450354),
+('laravel-cache-config_gateway_midtrans_active', 'N;', 1767607776),
+('laravel-cache-config_gateway_tripay_active', 's:1:\"1\";', 1767607694),
+('laravel-cache-config_gateway_xendit_active', 's:1:\"1\";', 1767607694),
+('laravel-cache-config_is_maintenance', 'N;', 1767607785),
+('laravel-cache-config_midtrans_client_key', 's:27:\"Mid-client-ZSrFtMq--UZlvkLT\";', 1767607785),
+('laravel-cache-config_midtrans_mode', 's:10:\"production\";', 1767607785),
+('laravel-cache-config_midtrans_server_key', 's:35:\"Mid-server-FH0Tn_R6luWLiXdeeo22wV3Q\";', 1767607785),
+('laravel-cache-config_payment_logo_1', 's:69:\"/storage/images/settings/MAZ6RMibykIf1xSdU5tf3PzDMwDI7M2sFdOWtMv3.jpg\";', 1767450354),
+('laravel-cache-config_payment_logo_2', 's:69:\"/storage/images/settings/A4WOOewXOuw5Oz4DlFsx9f4zkxYI2pV7U6MjkJKA.jpg\";', 1767450354),
+('laravel-cache-config_payment_logo_3', 's:69:\"/storage/images/settings/KrLtL0qaHJcYnaTtJaBRZxSiBE66b4lYGhkXoILc.jpg\";', 1767450354),
+('laravel-cache-config_payment_logo_4', 's:69:\"/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg\";', 1767450354),
+('laravel-cache-config_tripay_api_key', 's:44:\"DEV-TN3p8mNH8ol7RGBAyQxktQ406lHU7NjG2ezimLEW\";', 1767450723),
+('laravel-cache-config_tripay_merchant_code', 's:6:\"T13867\";', 1767450723),
+('laravel-cache-config_tripay_mode', 's:7:\"sandbox\";', 1767450723),
+('laravel-cache-config_tripay_private_key', 's:29:\"Ij23U-wKJTj-KrQ0v-WqU92-E4Dwr\";', 1767450723),
+('laravel-cache-config_whatsapp_number', 's:12:\"087894692316\";', 1767450354),
+('laravel-cache-config_xendit_callback_token', 's:48:\"z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p\";', 1767450543),
+('laravel-cache-config_xendit_mode', 's:10:\"production\";', 1767450543),
+('laravel-cache-config_xendit_secret_key', 's:78:\"xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy\";', 1767450543);
 
 -- --------------------------------------------------------
 
@@ -118,7 +122,10 @@ INSERT INTO `configurations` (`id`, `key`, `value`, `created_at`, `updated_at`) 
 (23, 'xendit_secret_key', 'xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy', '2026-01-02 10:53:01', '2026-01-02 10:53:01'),
 (24, 'xendit_callback_token', 'z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p', '2026-01-02 10:53:01', '2026-01-02 10:53:01'),
 (25, 'gateway_tripay_active', '1', '2026-01-02 11:19:48', '2026-01-02 11:41:47'),
-(26, 'gateway_xendit_active', '1', '2026-01-02 11:19:48', '2026-01-02 11:41:42');
+(26, 'gateway_xendit_active', '1', '2026-01-02 11:19:48', '2026-01-02 11:41:42'),
+(27, 'midtrans_mode', 'production', '2026-01-03 07:08:48', '2026-01-03 07:08:48'),
+(28, 'midtrans_server_key', 'Mid-server-FH0Tn_R6luWLiXdeeo22wV3Q', '2026-01-03 07:08:48', '2026-01-03 07:08:48'),
+(29, 'midtrans_client_key', 'Mid-client-ZSrFtMq--UZlvkLT', '2026-01-03 07:08:48', '2026-01-03 07:08:48');
 
 -- --------------------------------------------------------
 
@@ -502,7 +509,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('l8WfciVnJDMRWHr3GXHd9Vik8G6kZUbXANRL5FzO', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTG5nS2hUQmlzRGhseW56cTZzWHFQc09uY1NlejY3N3RNeXdzWGc2VSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi90cmFuc2FjdGlvbnMiO3M6NToicm91dGUiO3M6MjQ6ImFkbWluLnRyYW5zYWN0aW9ucy5pbmRleCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1767383104);
+('FCvNVmf6H110TcXqb5KWra9KXF2XcYRV1Ua2X7FL', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiRlFub0tIYzJ6SkQ4Y2VKWGZVbFNyaHRJU0dhcUJOOHF3ZTRWTlk4TyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0NzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL3BheW1lbnQiO31zOjk6Il9wcmV2aW91cyI7YToyOntzOjM6InVybCI7czo0ODoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL21pZHRyYW5zIjtzOjU6InJvdXRlIjtzOjI2OiJhZG1pbi5pbnRlZ3JhdGlvbi5taWR0cmFucyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1767606345);
 
 -- --------------------------------------------------------
 
@@ -691,7 +698,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT untuk tabel `configurations`
 --
 ALTER TABLE `configurations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT untuk tabel `failed_jobs`
@@ -751,7 +758,7 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
