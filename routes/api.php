@@ -3,19 +3,26 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\GameCheckController;
-use App\Http\Controllers\Api\CallbackController; // Import Controller
+use App\Http\Controllers\Api\CallbackController; // <--- Pastikan di-import
 
-// Route untuk Cek ID Game
-Route::post('/check-game-id', [GameCheckController::class, 'check']);
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+// API Cek ID Game (Public)
+Route::post('/check-game-id', [GameCheckController::class, 'check'])->name('api.check.game');
 
 // ==========================================
-// ROUTE CALLBACK (WEBHOOK)
+// ROUTES CALLBACK PAYMENT GATEWAY
 // ==========================================
 
-// URL: domain-anda.com/api/callback/tripay
+// 1. Callback Tripay
 Route::post('/callback/tripay', [CallbackController::class, 'handleTripay']);
 
-// URL: domain-anda.com/api/callback/xendit
+// 2. Callback Xendit
 Route::post('/callback/xendit', [CallbackController::class, 'handleXendit']);
 
+// 3. Callback Midtrans (WAJIB ADA)
 Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtrans']);
