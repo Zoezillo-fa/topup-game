@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 05 Jan 2026 pada 10.52
+-- Waktu pembuatan: 05 Jan 2026 pada 11.59
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -40,31 +40,31 @@ CREATE TABLE `cache` (
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
 ('laravel-cache-config_apigames_merchant', 's:17:\"M220704FEUE9178NP\";', 1767450721),
 ('laravel-cache-config_apigames_secret', 's:64:\"bd6fbd73d36bfdb7aa818288c604fe5543f977f8ace024bdeccfbfec9185d7d6\";', 1767450721),
-('laravel-cache-config_app_logo', 'N;', 1767450354),
-('laravel-cache-config_app_name', 's:11:\"Zoestore Id\";', 1767450354),
+('laravel-cache-config_app_logo', 'N;', 1767611769),
+('laravel-cache-config_app_name', 's:11:\"Zoestore Id\";', 1767611268),
 ('laravel-cache-config_digiflazz_key', 's:36:\"ea5dc837-f75c-565f-b663-c272a9433cb4\";', 1767450719),
 ('laravel-cache-config_digiflazz_mode', 's:10:\"production\";', 1767450719),
 ('laravel-cache-config_digiflazz_username', 's:12:\"zeyumoD22vqD\";', 1767450719),
-('laravel-cache-config_footer_description', 's:42:\"Website Topup Game Tercepat Dan Terpercaya\";', 1767450354),
-('laravel-cache-config_gateway_midtrans_active', 'N;', 1767607776),
-('laravel-cache-config_gateway_tripay_active', 's:1:\"1\";', 1767607694),
-('laravel-cache-config_gateway_xendit_active', 's:1:\"1\";', 1767607694),
-('laravel-cache-config_is_maintenance', 'N;', 1767608151),
+('laravel-cache-config_footer_description', 's:42:\"Website Topup Game Tercepat Dan Terpercaya\";', 1767611268),
+('laravel-cache-config_gateway_midtrans_active', 's:1:\"1\";', 1767611493),
+('laravel-cache-config_gateway_tripay_active', 's:1:\"0\";', 1767611493),
+('laravel-cache-config_gateway_xendit_active', 's:1:\"1\";', 1767611493),
+('laravel-cache-config_is_maintenance', 'N;', 1767612175),
 ('laravel-cache-config_midtrans_client_key', 's:30:\"SB-Mid-client-9FHjNP_lmvaXd6_F\";', 1767608151),
 ('laravel-cache-config_midtrans_mode', 's:7:\"sandbox\";', 1767608151),
 ('laravel-cache-config_midtrans_server_key', 's:38:\"SB-Mid-server-VHc_ltMQIJFnI9EE0KggMava\";', 1767608151),
-('laravel-cache-config_payment_logo_1', 's:69:\"/storage/images/settings/MAZ6RMibykIf1xSdU5tf3PzDMwDI7M2sFdOWtMv3.jpg\";', 1767450354),
-('laravel-cache-config_payment_logo_2', 's:69:\"/storage/images/settings/A4WOOewXOuw5Oz4DlFsx9f4zkxYI2pV7U6MjkJKA.jpg\";', 1767450354),
-('laravel-cache-config_payment_logo_3', 's:69:\"/storage/images/settings/KrLtL0qaHJcYnaTtJaBRZxSiBE66b4lYGhkXoILc.jpg\";', 1767450354),
-('laravel-cache-config_payment_logo_4', 's:69:\"/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg\";', 1767450354),
-('laravel-cache-config_tripay_api_key', 's:44:\"DEV-TN3p8mNH8ol7RGBAyQxktQ406lHU7NjG2ezimLEW\";', 1767450723),
+('laravel-cache-config_payment_logo_1', 's:69:\"/storage/images/settings/MAZ6RMibykIf1xSdU5tf3PzDMwDI7M2sFdOWtMv3.jpg\";', 1767611268),
+('laravel-cache-config_payment_logo_2', 's:69:\"/storage/images/settings/A4WOOewXOuw5Oz4DlFsx9f4zkxYI2pV7U6MjkJKA.jpg\";', 1767611268),
+('laravel-cache-config_payment_logo_3', 's:69:\"/storage/images/settings/KrLtL0qaHJcYnaTtJaBRZxSiBE66b4lYGhkXoILc.jpg\";', 1767611268),
+('laravel-cache-config_payment_logo_4', 's:69:\"/storage/images/settings/IgvESx3f1P7nK1m4GbfNI6kYf5c0BtlC6prgDMkT.jpg\";', 1767611268),
+('laravel-cache-config_tripay_api_key', 's:44:\"DEV-TN3p8mNH8ol7RGBAyQxktQ406lHU7NjG2ezimLEW\";', 1767608749),
 ('laravel-cache-config_tripay_merchant_code', 's:6:\"T13867\";', 1767450723),
-('laravel-cache-config_tripay_mode', 's:7:\"sandbox\";', 1767450723),
+('laravel-cache-config_tripay_mode', 's:7:\"sandbox\";', 1767608749),
 ('laravel-cache-config_tripay_private_key', 's:29:\"Ij23U-wKJTj-KrQ0v-WqU92-E4Dwr\";', 1767450723),
-('laravel-cache-config_whatsapp_number', 's:12:\"087894692316\";', 1767450354),
-('laravel-cache-config_xendit_callback_token', 's:48:\"z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p\";', 1767450543),
-('laravel-cache-config_xendit_mode', 's:10:\"production\";', 1767450543),
-('laravel-cache-config_xendit_secret_key', 's:78:\"xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy\";', 1767450543);
+('laravel-cache-config_whatsapp_number', 's:12:\"087894692316\";', 1767611268),
+('laravel-cache-config_xendit_callback_token', 's:48:\"z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p\";', 1767609158),
+('laravel-cache-config_xendit_mode', 's:10:\"production\";', 1767609158),
+('laravel-cache-config_xendit_secret_key', 's:78:\"xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy\";', 1767609158);
 
 -- --------------------------------------------------------
 
@@ -121,11 +121,12 @@ INSERT INTO `configurations` (`id`, `key`, `value`, `created_at`, `updated_at`) 
 (22, 'xendit_mode', 'production', '2026-01-02 10:53:01', '2026-01-02 10:53:01'),
 (23, 'xendit_secret_key', 'xnd_production_7lwOq3p4sTnCe2zRN2Bcl4zHvEgwZsQ6gJo121qNx0iO9oQnj9TQKWuUfrKXxFy', '2026-01-02 10:53:01', '2026-01-02 10:53:01'),
 (24, 'xendit_callback_token', 'z67iV99PdLPSq5nDI8x1PEE5nDde24ABHDRDrgHkRYR2rS2p', '2026-01-02 10:53:01', '2026-01-02 10:53:01'),
-(25, 'gateway_tripay_active', '1', '2026-01-02 11:19:48', '2026-01-02 11:41:47'),
+(25, 'gateway_tripay_active', '0', '2026-01-02 11:19:48', '2026-01-05 03:02:11'),
 (26, 'gateway_xendit_active', '1', '2026-01-02 11:19:48', '2026-01-02 11:41:42'),
 (27, 'midtrans_mode', 'sandbox', '2026-01-03 07:08:48', '2026-01-05 02:51:51'),
 (28, 'midtrans_server_key', 'SB-Mid-server-VHc_ltMQIJFnI9EE0KggMava', '2026-01-03 07:08:48', '2026-01-05 02:51:51'),
-(29, 'midtrans_client_key', 'SB-Mid-client-9FHjNP_lmvaXd6_F', '2026-01-03 07:08:48', '2026-01-05 02:51:51');
+(29, 'midtrans_client_key', 'SB-Mid-client-9FHjNP_lmvaXd6_F', '2026-01-03 07:08:48', '2026-01-05 02:51:51'),
+(30, 'gateway_midtrans_active', '1', '2026-01-05 03:01:45', '2026-01-05 03:47:33');
 
 -- --------------------------------------------------------
 
@@ -299,28 +300,19 @@ CREATE TABLE `payment_methods` (
 --
 
 INSERT INTO `payment_methods` (`id`, `code`, `provider`, `name`, `type`, `image`, `flat_fee`, `percent_fee`, `admin_fee_flat`, `admin_fee_percent`, `is_active`, `created_at`, `updated_at`) VALUES
-(51, 'QRIS', 'tripay', 'QRIS by ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/BpE4BPVyIw1605597490.png', 750.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:31:36', '2026-01-02 11:43:13'),
-(54, 'PERMATAVA', 'tripay', 'Permata Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/szezRhAALB1583408731.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(55, 'BNIVA', 'tripay', 'BNI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/n22Qsh8jMa1583433577.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(56, 'BRIVA', 'tripay', 'BRI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/8WQ3APST5s1579461828.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(57, 'MANDIRIVA', 'tripay', 'Mandiri Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/T9Z012UE331583531536.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(58, 'BCAVA', 'tripay', 'BCA Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/ytBKvaleGy1605201833.png', 5500.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(59, 'MUAMALATVA', 'tripay', 'Muamalat Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/GGwwcgdYaG1611929720.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(60, 'CIMBVA', 'tripay', 'CIMB Niaga Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/WtEJwfuphn1614003973.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(61, 'BSIVA', 'tripay', 'BSI Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/tEclz5Assb1643375216.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(62, 'OCBCVA', 'tripay', 'OCBC NISP Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/ysiSToLvKl1644244798.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(63, 'DANAMONVA', 'tripay', 'Danamon Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/F3pGzDOLUz1644245546.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(64, 'OTHERBANKVA', 'tripay', 'Other Bank Virtual Account', 'virtual_account', 'https://assets.tripay.co.id/upload/payment-icon/qQYo61sIDa1702995837.png', 4250.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(65, 'ALFAMART', 'tripay', 'Alfamart', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/jiGZMKp2RD1583433506.png', 3500.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(66, 'INDOMARET', 'tripay', 'Indomaret', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/zNzuO5AuLw1583513974.png', 3500.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(67, 'ALFAMIDI', 'tripay', 'Alfamidi', 'retail', 'https://assets.tripay.co.id/upload/payment-icon/aQTdaUC2GO1593660384.png', 3500.00, 0.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(68, 'OVO', 'tripay', 'OVO', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/fH6Y7wDT171586199243.png', 0.00, 3.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(69, 'QRISC', 'tripay', 'QRIS (Customizable)', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/m9FtFwaBCg1623157494.png', 750.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(70, 'QRIS2', 'tripay', 'QRIS', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/8ewGzP6SWe1649667701.png', 750.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(71, 'DANA', 'tripay', 'DANA', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/sj3UHLu8Tu1655719621.png', 0.00, 3.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(72, 'SHOPEEPAY', 'tripay', 'ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/d204uajhlS1655719774.png', 0.00, 3.00, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(73, 'QRIS_SHOPEEPAY', 'tripay', 'QRIS Custom by ShopeePay', 'e_wallet', 'https://assets.tripay.co.id/upload/payment-icon/DM8sBd1i9y1681718593.png', 750.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:41:49', '2026-01-02 11:43:13'),
-(75, 'QRIS_XENDIT', 'xendit', 'QRIS Xendit (Isi Saldo)', 'e_wallet', NULL, 0.00, 0.70, 0.00, 0.00, 1, '2026-01-02 11:43:13', '2026-01-02 11:43:13');
+(86, 'QRIS_XENDIT', 'xendit', 'QRIS Xendit (Isi Saldo)', 'e_wallet', '/images/payment/qris.jpg', 0.00, 0.70, 0.00, 0.00, 1, '2026-01-05 03:02:16', '2026-01-05 03:58:55'),
+(102, 'gopay', 'midtrans', 'GoPay / GoPay Later', 'e_wallet', 'https://docs.midtrans.com/asset/image/payment-list/gopay.png', 0.00, 2.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(103, 'shopeepay', 'midtrans', 'ShopeePay / SPayLater', 'e_wallet', '/images/payment/shopeepay.jpg', 0.00, 2.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(104, 'qris', 'midtrans', 'QRIS (Midtrans)', 'e_wallet', '/images/payment/qris.jpg', 0.00, 0.70, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(105, 'bca_va', 'midtrans', 'BCA Virtual Account', 'virtual_account', '/images/payment/bca.jpg', 4000.00, 0.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(106, 'bni_va', 'midtrans', 'BNI Virtual Account', 'virtual_account', 'https://docs.midtrans.com/asset/image/payment-list/bni.png', 4000.00, 0.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(107, 'bri_va', 'midtrans', 'BRI Virtual Account', 'virtual_account', 'https://docs.midtrans.com/asset/image/payment-list/bri.png', 4000.00, 0.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(108, 'echannel', 'midtrans', 'Mandiri Bill Payment', 'virtual_account', 'https://docs.midtrans.com/asset/image/payment-list/mandiri.png', 4000.00, 0.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(109, 'permata_va', 'midtrans', 'Permata Virtual Account', 'virtual_account', 'https://docs.midtrans.com/asset/image/payment-list/permata.png', 4000.00, 0.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(110, 'cimb_va', 'midtrans', 'CIMB Niaga Virtual Account', 'virtual_account', 'https://docs.midtrans.com/asset/image/payment-list/cimb.png', 4000.00, 0.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(111, 'indomaret', 'midtrans', 'Indomaret', 'retail', 'https://docs.midtrans.com/asset/image/payment-list/indomaret.png', 2500.00, 0.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(112, 'alfamart', 'midtrans', 'Alfamart', 'retail', 'https://docs.midtrans.com/asset/image/payment-list/alfamart.png', 2500.00, 0.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:58:55'),
+(113, 'akulaku', 'midtrans', 'Akulaku PayLater', 'e_wallet', 'https://docs.midtrans.com/asset/image/payment-list/akulaku.png', 0.00, 2.00, 0.00, 0.00, 1, '2026-01-05 03:47:34', '2026-01-05 03:47:34');
 
 -- --------------------------------------------------------
 
@@ -509,7 +501,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('FCvNVmf6H110TcXqb5KWra9KXF2XcYRV1Ua2X7FL', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiRlFub0tIYzJ6SkQ4Y2VKWGZVbFNyaHRJU0dhcUJOOHF3ZTRWTlk4TyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0NzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL3BheW1lbnQiO31zOjk6Il9wcmV2aW91cyI7YToyOntzOjM6InVybCI7czo0ODoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL21pZHRyYW5zIjtzOjU6InJvdXRlIjtzOjI2OiJhZG1pbi5pbnRlZ3JhdGlvbi5taWR0cmFucyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1767606711);
+('FCvNVmf6H110TcXqb5KWra9KXF2XcYRV1Ua2X7FL', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiRlFub0tIYzJ6SkQ4Y2VKWGZVbFNyaHRJU0dhcUJOOHF3ZTRWTlk4TyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0NzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL3BheW1lbnQiO31zOjk6Il9wcmV2aW91cyI7YToyOntzOjM6InVybCI7czo0NzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL2FkbWluL2ludGVncmF0aW9uL3BheW1lbnQiO3M6NToicm91dGUiO3M6MjU6ImFkbWluLmludGVncmF0aW9uLnBheW1lbnQiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1767610735);
 
 -- --------------------------------------------------------
 
@@ -698,7 +690,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT untuk tabel `configurations`
 --
 ALTER TABLE `configurations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT untuk tabel `failed_jobs`
@@ -728,7 +720,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT untuk tabel `payment_methods`
 --
 ALTER TABLE `payment_methods`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT untuk tabel `personal_access_tokens`
