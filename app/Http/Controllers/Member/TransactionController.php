@@ -11,12 +11,11 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        // Ambil data transaksi milik user yang sedang login
+        // Ambil transaksi milik user yang login
         $transactions = Transaction::where('user_id', Auth::id())
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10);
+                                   ->latest()
+                                   ->paginate(10); // 10 per halaman
 
-        // Tampilkan ke view
         return view('member.transactions.index', compact('transactions'));
     }
 }

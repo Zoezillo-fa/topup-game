@@ -9,6 +9,7 @@ use App\Models\Configuration;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
 use App\Services\DigiflazzService;
+use Illuminate\Support\Facades\DB;
 
 class CallbackController extends Controller
 {
@@ -17,10 +18,13 @@ class CallbackController extends Controller
     // ==========================================
     public function handleTripay(Request $request, DigiflazzService $digiflazz)
     {
+        // 1. Ambil Signature dari Header
         $callbackSignature = $request->server('HTTP_X_CALLBACK_SIGNATURE');
         $json = $request->getContent();
-        $privateKey = Configuration::getBy('tripay_private_key');
-
+        
+        // 2. Validasi Signature (Keamanan)
+        // Pastikan 'tripay_private_key' ada di tabel configurations
+        $privateKey = Configuration::getBy('tripay_private_key'); 
         $signature = hash_hmac('sha256', $json, $privateKey);
 
         if ($signature !== $callbackSignature) {
@@ -31,44 +35,22 @@ class CallbackController extends Controller
         $event = $request->server('HTTP_X_CALLBACK_EVENT');
 
         if ($event == 'payment_status') {
-            // Cari transaksi berdasarkan Reference
+            // Cari transaksi berdasarkan Merchant Ref
             $trx = Transaction::where('reference', $data->merchant_ref)->first();
 
             if ($trx) {
-                // A. JIKA SUKSES
+                // A. JIKA STATUS DIBAYAR (PAID)
                 if ($data->status == 'PAID') {
                     if ($trx->status == 'UNPAID') {
-                        
-                        // Cek apakah ini DEPOSIT atau PEMBELIAN GAME
-                        if ($trx->service == 'DEPOSIT') {
-                            // 1. Update Status Transaksi & Processing Status (Supaya dashboard tidak loading)
-                            $trx->update([
-                                'status' => 'PAID',
-                                'processing_status' => 'SUCCESS', 
-                                'sn' => 'DEP/' . time() // Serial Number Dummy
-                            ]);
-
-                            // 2. Tambah Saldo User
-                            $user = $trx->user;
-                            if ($user) {
-                                $user->balance += $trx->amount;
-                                $user->save();
-                                Log::info("Tripay Deposit Success: {$trx->reference} - User: {$user->name} (+{$trx->amount})");
-                            }
-                        } else {
-                            // Jika Pembelian Game -> Update PAID, biarkan Digiflazz urus processingnya
-                            $trx->update(['status' => 'PAID']);
-                            $digiflazz->processTransaction($trx);
-                        }
+                        $this->processSuccess($trx, $digiflazz, "Tripay");
                     }
                 } 
-                // B. JIKA GAGAL / EXPIRED / REFUND
+                // B. JIKA GAGAL / EXPIRED
                 elseif (in_array($data->status, ['EXPIRED', 'FAILED', 'REFUND'])) {
                     $trx->update([
                         'status' => strtoupper($data->status),
-                        'processing_status' => 'FAILED' // Supaya dashboard jelas gagal
+                        'processing_status' => 'FAILED'
                     ]);
-                    Log::info("Tripay Transaction {$data->status}: {$trx->reference}");
                 }
             }
         }
@@ -81,54 +63,32 @@ class CallbackController extends Controller
     // ==========================================
     public function handleXendit(Request $request, DigiflazzService $digiflazz)
     {
+        // 1. Validasi Token Xendit
         $xenditTokenHeader = $request->header('x-callback-token');
         $myToken = Configuration::getBy('xendit_callback_token');
 
+        // Jika token di database diisi, maka wajib sama
         if ($myToken && $xenditTokenHeader !== $myToken) {
             return Response::json(['message' => 'Invalid Token'], 403);
         }
 
         $data = $request->all();
-        $status = $data['status'] ?? null;
+        // Xendit kadang kirim 'status', kadang untuk FVA beda format. Ini handler umum Invoice.
+        $status = $data['status'] ?? null; 
         $externalId = $data['external_id'] ?? null;
 
-        // Cari transaksi
         $trx = Transaction::where('reference', $externalId)->first();
 
         if ($trx) {
-            // A. JIKA SUKSES
             if ($status == 'PAID' || $status == 'SETTLED') {
                 if ($trx->status == 'UNPAID') {
-                    
-                    if ($trx->service == 'DEPOSIT') {
-                        // 1. Update Status & Processing (Fix Dashboard Loading)
-                        $trx->update([
-                            'status' => 'PAID',
-                            'processing_status' => 'SUCCESS',
-                            'sn' => 'DEP/' . time()
-                        ]);
-
-                        // 2. Tambah Saldo User
-                        $user = $trx->user;
-                        if ($user) {
-                            $user->balance += $trx->amount;
-                            $user->save();
-                            Log::info("Xendit Deposit Success: {$trx->reference} - User: {$user->name} (+{$trx->amount})");
-                        }
-                    } else {
-                        // Jika Pembelian Game
-                        $trx->update(['status' => 'PAID']);
-                        $digiflazz->processTransaction($trx);
-                    }
+                    $this->processSuccess($trx, $digiflazz, "Xendit");
                 }
-            }
-            // B. JIKA GAGAL / EXPIRED
-            elseif ($status == 'EXPIRED') {
+            } elseif ($status == 'EXPIRED') {
                 $trx->update([
                     'status' => 'EXPIRED',
                     'processing_status' => 'FAILED'
                 ]);
-                Log::info("Xendit Transaction Expired: {$trx->reference}");
             }
         }
 
@@ -140,9 +100,11 @@ class CallbackController extends Controller
     // ==========================================
     public function handleMidtrans(Request $request, DigiflazzService $digiflazz)
     {
-        // Konfigurasi Library
+        // 1. Konfigurasi
         \Midtrans\Config::$serverKey = Configuration::getBy('midtrans_server_key');
         \Midtrans\Config::$isProduction = (Configuration::getBy('midtrans_mode') == 'production');
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
 
         try {
             $notif = new \Midtrans\Notification();
@@ -151,29 +113,25 @@ class CallbackController extends Controller
         }
 
         $transactionStatus = $notif->transaction_status;
-        $type = $notif->payment_type;
         $orderId = $notif->order_id;
         $fraud = $notif->fraud_status;
 
-        // Cari transaksi
         $trx = Transaction::where('reference', $orderId)->first();
 
         if ($trx) {
-            // Logic Status Midtrans
             if ($transactionStatus == 'capture') {
-                if ($type == 'credit_card') {
+                if ($notif->payment_type == 'credit_card') {
                     if ($fraud == 'challenge') {
-                        $trx->update(['status' => 'UNPAID']); // Masih menunggu konfirmasi
+                        $trx->update(['status' => 'UNPAID']);
                     } else {
-                        $this->processSuccess($trx, $digiflazz, 'Midtrans CC');
+                        $this->processSuccess($trx, $digiflazz, "Midtrans CC");
                     }
                 }
             } elseif ($transactionStatus == 'settlement') {
-                // SUKSES / LUNAS
-                $this->processSuccess($trx, $digiflazz, 'Midtrans Settlement');
-            } elseif ($transactionStatus == 'pending') {
+                $this->processSuccess($trx, $digiflazz, "Midtrans Settlement");
+            } elseif (in_array($transactionStatus, ['pending'])) {
                 $trx->update(['status' => 'UNPAID']);
-            } elseif ($transactionStatus == 'deny' || $transactionStatus == 'expire' || $transactionStatus == 'cancel') {
+            } elseif (in_array($transactionStatus, ['deny', 'expire', 'cancel'])) {
                 $trx->update([
                     'status' => 'EXPIRED',
                     'processing_status' => 'FAILED'
@@ -184,26 +142,62 @@ class CallbackController extends Controller
         return Response::json(['success' => true]);
     }
 
-    // Helper untuk memproses kesuksesan (supaya tidak duplikat kodingan)
-    private function processSuccess($trx, $digiflazz, $logPrefix)
+    // ==========================================
+    // HELPER: LOGIKA SUKSES (PUSAT)
+    // ==========================================
+    private function processSuccess($trx, $digiflazz, $providerName)
     {
-        if ($trx->status == 'UNPAID') {
-            if ($trx->service == 'DEPOSIT') {
+        // Cek Double Hit (Mencegah saldo bertambah 2x jika callback masuk 2x)
+        if ($trx->status == 'PAID') {
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // 1. Cek Apakah Ini Deposit Saldo?
+            // Kriteria: product_code == 'DEPOSIT' ATAU service_name mengandung kata 'Deposit'
+            $isDeposit = ($trx->product_code == 'DEPOSIT') || 
+                         (stripos($trx->service_name, 'Deposit') !== false) ||
+                         ($trx->game_code == 'DEPOSIT');
+
+            if ($isDeposit) {
+                // --- LOGIKA DEPOSIT ---
                 $trx->update([
                     'status' => 'PAID',
-                    'processing_status' => 'SUCCESS',
-                    'sn' => 'DEP/' . time()
+                    'processing_status' => 'SUCCESS', // Deposit langsung sukses, tidak perlu ke Digiflazz
+                    'sn' => 'DEP/' . time() . '/' . rand(100,999)
                 ]);
+
                 $user = $trx->user;
                 if ($user) {
-                    $user->balance += $trx->amount;
+                    $user->balance += $trx->amount; // Tambah saldo user
                     $user->save();
-                    Log::info("$logPrefix Success: {$trx->reference} (+{$trx->amount})");
+                    Log::info("{$providerName} Deposit Success: {$trx->reference} User: {$user->name} (+{$trx->amount})");
                 }
             } else {
+                // --- LOGIKA PEMBELIAN GAME ---
                 $trx->update(['status' => 'PAID']);
-                $digiflazz->processTransaction($trx);
+                
+                // Kirim request ke Digiflazz
+                // Kita commit database dulu agar status PAID tersimpan sebelum request API yang memakan waktu
+                DB::commit(); 
+                
+                try {
+                    $digiflazz->processTransaction($trx);
+                    Log::info("{$providerName} Game Trx Success: {$trx->reference} -> Sent to Digiflazz");
+                } catch (\Exception $e) {
+                    Log::error("Digiflazz Error after Payment: " . $e->getMessage());
+                    // Jangan ubah status jadi failed, biarkan admin cek manual jika digiflazz error
+                }
+                return; // Return karena sudah commit manual di atas
             }
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Callback Error {$providerName}: " . $e->getMessage());
         }
     }
 }

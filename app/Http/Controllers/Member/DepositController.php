@@ -4,81 +4,74 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\PaymentMethod;
 use App\Models\Transaction;
-use App\Models\Configuration;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use App\Services\PaymentGatewayService;
 
 class DepositController extends Controller
 {
-    // 1. TAMPILKAN HALAMAN DEPOSIT
     public function index()
     {
-        return view('member.deposit.index');
+        // 1. Ambil Manual Transfer
+        $manualMethods = PaymentMethod::where('provider', 'manual')
+                                      ->where('is_active', 1)
+                                      ->get();
+
+        // 2. Ambil QRIS Tripay (Kode biasanya QRIS / QRISC / QRIS2)
+        $tripayQris = PaymentMethod::where('provider', 'tripay')
+                                   ->whereIn('code', ['QRIS', 'QRISC', 'QRIS2'])
+                                   ->where('is_active', 1)
+                                   ->first();
+
+        return view('member.deposit.index', compact('manualMethods', 'tripayQris'));
     }
 
-    // 2. PROSES PEMBUATAN INVOICE DEPOSIT
-    public function store(Request $request)
+    public function store(Request $request, PaymentGatewayService $gateway)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:10000', // Minimal deposit 10rb
+            'amount' => 'required|numeric|min:10000',
+            'payment_method' => 'required|exists:payment_methods,code'
         ]);
 
-        $user = Auth::user();
-        $amount = $request->amount;
-        
-        // Buat Invoice ID Unik (DEP-...) agar beda dengan transaksi game (TRX-...)
-        $invoiceId = 'DEP-' . strtoupper(Str::random(10));
-
-        // 1. Simpan Transaksi ke Database
-        $trx = Transaction::create([
-            'user_id'          => $user->id,
-            'reference'        => $invoiceId,
-            'service'          => 'DEPOSIT', 
-            'service_name'     => 'Isi Saldo Akun',
-            'target'           => $user->phone ?? '-',
-            
-            // [PENTING] Isi ini agar Nama User muncul di Dashboard Admin
-            'nickname_game'    => $user->name, 
-            
-            'amount'           => $amount,
-            'price'            => $amount,
-            'status'           => 'UNPAID',
-            
-            // [PENTING] Set status awal pending
-            'processing_status'=> 'PENDING', 
-            
-            'payment_method'   => 'QRIS',
-            'payment_provider' => 'xendit'
-        ]);
-
-        // 2. Request ke API Xendit (Buat Invoice)
-        $secretKey = Configuration::getBy('xendit_secret_key');
-        
         try {
-            $response = Http::withBasicAuth($secretKey, '')
-                ->post('https://api.xendit.co/v2/invoices', [
-                    'external_id'      => $invoiceId,
-                    'amount'           => $amount,
-                    'description'      => "Deposit Saldo " . $user->name,
-                    'payer_email'      => $user->email,
-                    'payment_methods'  => ['QRIS'], // <--- KUNCI: Kita paksa hanya QRIS
-                    'success_redirect_url' => route('member.profile'), // Redirect setelah bayar
-                    'failure_redirect_url' => route('deposit.index'),
-                ]);
+            DB::beginTransaction();
 
-            $xendit = $response->json();
+            $user = Auth::user();
+            $method = PaymentMethod::where('code', $request->payment_method)->firstOrFail();
+            
+            // Format Invoice: DEP-USERID-TIMESTAMP
+            $reference = 'DEP-' . $user->id . '-' . time();
 
-            if (isset($xendit['invoice_url'])) {
-                // Redirect user langsung ke halaman pembayaran Xendit
-                return redirect($xendit['invoice_url']);
+            $transaction = Transaction::create([
+                'user_id'           => $user->id,
+                'reference'         => $reference,
+                'product_code'      => 'DEPOSIT',
+                'game_code'         => 'DEPOSIT',
+                'service_name'      => 'Isi Saldo ' . number_format($request->amount),
+                'target'            => $user->phonenumber ?? '-',
+                'amount'            => $request->amount,
+                'price'             => $request->amount,
+                'status'            => 'UNPAID',
+                'processing_status' => 'PENDING',
+                'payment_method'    => $method->code
+            ]);
+
+            DB::commit();
+
+            // Proses Pembayaran
+            $process = $gateway->process($transaction, $method);
+
+            if ($process['success']) {
+                return redirect($process['redirect_url']);
             } else {
-                return back()->with('error', 'Gagal membuat tagihan Xendit. ' . json_encode($xendit));
+                return back()->with('error', 'Gagal memproses pembayaran.');
             }
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan koneksi: ' . $e->getMessage());
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 }
