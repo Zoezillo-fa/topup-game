@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Http;
 
 class PaymentMethodController extends Controller
 {
-    /**
-     * Menampilkan halaman kelola metode pembayaran
-     */
     public function index()
     {
         $payments = PaymentMethod::all();
@@ -27,9 +24,6 @@ class PaymentMethodController extends Controller
         return view('admin.integration.payment.index', compact('payments', 'gatewayStatus'));
     }
 
-    /**
-     * Menyimpan status Switch ON/OFF Gateway
-     */
     public function updateGatewayStatus(Request $request)
     {
         Configuration::set('gateway_tripay_active', $request->has('tripay') ? '1' : '0');
@@ -39,9 +33,9 @@ class PaymentMethodController extends Controller
         return back()->with('success', 'Status Payment Gateway berhasil diperbarui!');
     }
 
-    /**
-     * Fitur Utama: Sinkronisasi Otomatis Metode Pembayaran
-     */
+    // ==========================================
+    // LOGIC SYNC OTOMATIS
+    // ==========================================
     public function syncAuto()
     {
         $tripayActive   = Configuration::getBy('gateway_tripay_active') == '1';
@@ -50,7 +44,7 @@ class PaymentMethodController extends Controller
         
         $message = [];
 
-        // 1. TRIPAY (Sync via API Realtime)
+        // 1. TRIPAY (Prioritas Utama untuk QRIS)
         if ($tripayActive) {
             $res = $this->fetchTripayChannels();
             if ($res['success']) {
@@ -59,176 +53,38 @@ class PaymentMethodController extends Controller
                 return back()->with('error', "Tripay Error: " . $res['message']);
             }
         } else {
-            $deleted = PaymentMethod::where('provider', 'tripay')->delete();
-            $message[] = "Tripay: $deleted dihapus.";
+            PaymentMethod::where('provider', 'tripay')->delete();
+            $message[] = "Tripay: dihapus.";
         }
 
-        // 2. MIDTRANS (Manual Seeding dengan Gambar LOKAL)
+        // 2. MIDTRANS
         if ($midtransActive) {
             $count = $this->seedMidtransChannels();
             $message[] = "Midtrans: $count metode.";
         } else {
-            $deleted = PaymentMethod::where('provider', 'midtrans')->delete();
-            $message[] = "Midtrans: $deleted dihapus.";
+            PaymentMethod::where('provider', 'midtrans')->delete();
+            $message[] = "Midtrans: dihapus.";
         }
 
-        // 3. XENDIT (Sync Khusus QRIS)
+        // 3. XENDIT (Sekarang Kosong / Hapus QRIS Lama)
         if ($xenditActive) {
-            PaymentMethod::where('provider', 'xendit')->where('code', '!=', 'QRIS_XENDIT')->delete();
-            $this->seedXenditQRIS();
-            $message[] = "Xendit: QRIS disinkronkan.";
+            // Kita hapus logika pembuatan QRIS Xendit Manual disini
+            // Jika ada metode Xendit lain (Virtual Account dll) biarkan logic sync-nya (jika ada API)
+            // Tapi untuk saat ini kita bersihkan sisa QRIS Xendit Manual
+            PaymentMethod::where('provider', 'xendit')->where('code', 'QRIS_XENDIT')->delete();
+            $message[] = "Xendit: Bersih.";
         } else {
-            $deleted = PaymentMethod::where('provider', 'xendit')->delete();
-            $message[] = "Xendit: $deleted dihapus.";
+            PaymentMethod::where('provider', 'xendit')->delete();
+            $message[] = "Xendit: dihapus.";
         }
 
         return back()->with('success', 'Sync Selesai! ' . implode(' | ', $message));
     }
 
-    // ==========================================
-    // HELPER FUNCTIONS (LOGIC SYNC)
-    // ==========================================
-
     /**
-     * Daftar Channel Midtrans dengan Gambar LOKAL
+     * TRIPAY CHANNEL SYNC
+     * Updated: Memaksa kode 'QRIS', 'QRISC', 'QRIS2' pakai logo lokal qris.jpg
      */
-    private function seedMidtransChannels()
-    {
-        // URL Fallback (Jika gambar lokal belum diupload)
-        $baseUrl = 'https://docs.midtrans.com/asset/image/payment-list';
-
-        // LOGIC UTAMA: Mapping Gambar Lokal (Berdasarkan file yang Anda punya)
-        $localMap = [
-            'bca_va'    => '/images/payment/bca.jpg',
-            'shopeepay' => '/images/payment/shopeepay.jpg',
-            'qris'      => '/images/payment/qris.jpg',
-            // DANA biasanya via GoPay/QRIS di Midtrans Snap, tapi jika ada channel khusus:
-            // 'dana'      => '/images/payment/dana.jpg', 
-        ];
-
-        $channels = [
-            // E-Wallet
-            [
-                'code' => 'gopay', 
-                'name' => 'GoPay / GoPay Later', 
-                'type' => 'e_wallet', 
-                // Jika file gopay.jpg ada, ubah jadi: '/images/payment/gopay.jpg'
-                'image' => "$baseUrl/gopay.png", 
-                'flat' => 0, 'percent' => 2.0
-            ],
-            [
-                'code' => 'shopeepay', 
-                'name' => 'ShopeePay / SPayLater', 
-                'type' => 'e_wallet',
-                'image' => $localMap['shopeepay'] ?? "$baseUrl/shopeepay.png", // Pakai Lokal jika ada
-                'flat' => 0, 'percent' => 2.0
-            ],
-            [
-                'code' => 'qris', 
-                'name' => 'QRIS (Midtrans)', 
-                'type' => 'e_wallet',
-                'image' => $localMap['qris'] ?? "https://tripay.co.id/images/payment-channel/qris.png",
-                'flat' => 0, 'percent' => 0.7
-            ],
-
-            // Virtual Account
-            [
-                'code' => 'bca_va', 
-                'name' => 'BCA Virtual Account', 
-                'type' => 'virtual_account',
-                'image' => $localMap['bca_va'] ?? "$baseUrl/bca.png", // Pakai Lokal
-                'flat' => 4000, 'percent' => 0
-            ],
-            [
-                'code' => 'bni_va', 
-                'name' => 'BNI Virtual Account', 
-                'type' => 'virtual_account',
-                'image' => "$baseUrl/bni.png",
-                'flat' => 4000, 'percent' => 0
-            ],
-            [
-                'code' => 'bri_va', 
-                'name' => 'BRI Virtual Account', 
-                'type' => 'virtual_account',
-                'image' => "$baseUrl/bri.png",
-                'flat' => 4000, 'percent' => 0
-            ],
-            [
-                'code' => 'echannel', 
-                'name' => 'Mandiri Bill Payment', 
-                'type' => 'virtual_account',
-                'image' => "$baseUrl/mandiri.png",
-                'flat' => 4000, 'percent' => 0
-            ],
-            [
-                'code' => 'permata_va', 
-                'name' => 'Permata Virtual Account', 
-                'type' => 'virtual_account',
-                'image' => "$baseUrl/permata.png",
-                'flat' => 4000, 'percent' => 0
-            ],
-            [
-                'code' => 'cimb_va', 
-                'name' => 'CIMB Niaga Virtual Account', 
-                'type' => 'virtual_account',
-                'image' => "$baseUrl/cimb.png",
-                'flat' => 4000, 'percent' => 0
-            ],
-
-            // Retail
-            [
-                'code' => 'indomaret', 
-                'name' => 'Indomaret', 
-                'type' => 'retail',
-                'image' => "$baseUrl/indomaret.png",
-                'flat' => 2500, 'percent' => 0
-            ],
-            [
-                'code' => 'alfamart', 
-                'name' => 'Alfamart', 
-                'type' => 'retail',
-                'image' => "$baseUrl/alfamart.png",
-                'flat' => 2500, 'percent' => 0
-            ],
-        ];
-
-        $count = 0;
-        foreach ($channels as $c) {
-            PaymentMethod::updateOrCreate(
-                ['code' => $c['code'], 'provider' => 'midtrans'],
-                [
-                    'name'        => $c['name'],
-                    'type'        => $c['type'],
-                    'image'       => $c['image'], // Gambar otomatis terisi URL lokal atau fallback
-                    'flat_fee'    => $c['flat'],
-                    'percent_fee' => $c['percent'],
-                ]
-            );
-            $count++;
-        }
-        return $count;
-    }
-
-    /**
-     * Xendit QRIS dengan Gambar LOKAL
-     */
-    private function seedXenditQRIS()
-    {
-        $code = 'QRIS_XENDIT'; 
-        
-        PaymentMethod::updateOrCreate(
-            ['code' => $code, 'provider' => 'xendit'],
-            [
-                'name'        => 'QRIS Xendit (Isi Saldo)',
-                'flat_fee'    => 0,
-                'percent_fee' => 0.7, 
-                // Pakai gambar lokal qris.jpg yang sudah ada
-                'image'       => '/images/payment/qris.jpg', 
-                'type'        => 'e_wallet',
-            ]
-        );
-    }
-
     private function fetchTripayChannels()
     {
         $apiKey = Configuration::getBy('tripay_api_key');
@@ -238,8 +94,7 @@ class PaymentMethodController extends Controller
         if (!$apiKey) return ['success' => false, 'message' => 'API Key Tripay belum diisi'];
 
         try {
-            $response = Http::withHeaders(['Authorization' => 'Bearer ' . $apiKey])
-                            ->get($baseUrl . '/merchant/payment-channel');
+            $response = Http::withHeaders(['Authorization' => 'Bearer ' . $apiKey])->get($baseUrl . '/merchant/payment-channel');
             $result = $response->json();
 
             if (!isset($result['success']) || !$result['success']) {
@@ -247,6 +102,15 @@ class PaymentMethodController extends Controller
             }
 
             foreach ($result['data'] as $channel) {
+                // LOGIC CUSTOM LOGO QRIS
+                $image = $channel['icon_url'];
+                $codeUpper = strtoupper($channel['code']);
+
+                // Jika Tripay mengirim kode QRIS apa saja, paksa pakai logo lokal
+                if (in_array($codeUpper, ['QRIS', 'QRISC', 'QRIS2', 'QRIS_SHOPEEPAY'])) {
+                    $image = '/images/payment/qris.jpg';
+                }
+
                 PaymentMethod::updateOrCreate(
                     ['code' => $channel['code']], 
                     [
@@ -254,7 +118,7 @@ class PaymentMethodController extends Controller
                         'provider'    => 'tripay',
                         'flat_fee'    => $channel['total_fee']['flat'] ?? 0,
                         'percent_fee' => $channel['total_fee']['percent'] ?? 0,
-                        'image'       => $channel['icon_url'],
+                        'image'       => $image, // Gunakan image hasil filter di atas
                         'type'        => $this->mapGroupType($channel['group']),
                     ]
                 );
@@ -265,10 +129,83 @@ class PaymentMethodController extends Controller
         }
     }
 
-    // ==========================================
-    // CRUD MANUAL
-    // ==========================================
+    /**
+     * MIDTRANS CHANNEL SYNC
+     */
+    private function seedMidtransChannels()
+    {
+        $baseUrl = 'https://docs.midtrans.com/asset/image/payment-list';
 
+        // Whitelist Midtrans (Hapus 'qris' jika Anda ingin HANYA Tripay yang menangani QRIS)
+        $whitelist = [
+            'gopay',        
+            'shopeepay',    
+            // 'qris',      <-- SAYA KOMENTAR AGAR QRIS HANYA DARI TRIPAY
+            'bca_va', 
+            'bni_va', 
+            'bri_va', 
+            'echannel',     
+            'permata_va',
+            'cimb_va',
+            'indomaret', 
+            'alfamart',
+        ];
+
+        $localMap = [
+            'gopay'       => '/images/payment/GoPay.png',      
+            'shopeepay'   => '/images/payment/shopeepay.jpg',  
+            'bca_va'      => '/images/payment/bca.jpg',        
+            'bni_va'      => '/images/payment/Bni.png',        
+            'bri_va'      => '/images/payment/Bri.jpg',        
+            'echannel'    => '/images/payment/Mandiri.jpg',    
+            'permata_va'  => '/images/payment/Permata.jpg',    
+            'cimb_va'     => '/images/payment/Cimb.png',       
+            'indomaret'   => '/images/payment/Indomaret.png',  
+            'alfamart'    => '/images/payment/Alfamart.png',   
+            'akulaku'     => '/images/payment/Akulaku.jpg',    
+        ];
+
+        $allChannels = [
+            ['code' => 'gopay', 'name' => 'GoPay / GoPay Later', 'type' => 'e_wallet', 'flat' => 0, 'percent' => 2.0],
+            ['code' => 'shopeepay', 'name' => 'ShopeePay / SPayLater', 'type' => 'e_wallet', 'flat' => 0, 'percent' => 2.0],
+            ['code' => 'qris', 'name' => 'QRIS', 'type' => 'e_wallet', 'flat' => 0, 'percent' => 0.7],
+            ['code' => 'bca_va', 'name' => 'BCA Virtual Account', 'type' => 'virtual_account', 'flat' => 4000, 'percent' => 0],
+            ['code' => 'bni_va', 'name' => 'BNI Virtual Account', 'type' => 'virtual_account', 'flat' => 4000, 'percent' => 0],
+            ['code' => 'bri_va', 'name' => 'BRI Virtual Account', 'type' => 'virtual_account', 'flat' => 4000, 'percent' => 0],
+            ['code' => 'echannel', 'name' => 'Mandiri Bill Payment', 'type' => 'virtual_account', 'flat' => 4000, 'percent' => 0],
+            ['code' => 'permata_va', 'name' => 'Permata Virtual Account', 'type' => 'virtual_account', 'flat' => 4000, 'percent' => 0],
+            ['code' => 'cimb_va', 'name' => 'CIMB Niaga Virtual Account', 'type' => 'virtual_account', 'flat' => 4000, 'percent' => 0],
+            ['code' => 'indomaret', 'name' => 'Indomaret', 'type' => 'retail', 'flat' => 2500, 'percent' => 0],
+            ['code' => 'alfamart', 'name' => 'Alfamart', 'type' => 'retail', 'flat' => 2500, 'percent' => 0],
+            ['code' => 'akulaku', 'name' => 'Akulaku PayLater', 'type' => 'e_wallet', 'flat' => 0, 'percent' => 2.0],
+        ];
+
+        $count = 0;
+        PaymentMethod::where('provider', 'midtrans')->whereNotIn('code', $whitelist)->delete();
+
+        foreach ($allChannels as $c) {
+            if (!in_array($c['code'], $whitelist)) continue;
+
+            $imagePath = $localMap[$c['code']] ?? "$baseUrl/{$c['code']}.png";
+
+            PaymentMethod::updateOrCreate(
+                ['code' => $c['code']], 
+                [
+                    'name'        => $c['name'],
+                    'provider'    => 'midtrans',
+                    'type'        => $c['type'],
+                    'image'       => $imagePath,
+                    'flat_fee'    => $c['flat'],
+                    'percent_fee' => $c['percent'],
+                    'is_active'   => 1 
+                ]
+            );
+            $count++;
+        }
+        return $count;
+    }
+
+    // CRUD Manual
     public function store(Request $request)
     {
         $request->validate([
